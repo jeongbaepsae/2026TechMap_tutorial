@@ -1,0 +1,1 @@
+setup.add(seat: playerSeat)

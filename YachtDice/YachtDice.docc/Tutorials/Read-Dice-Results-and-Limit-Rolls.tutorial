@@ -1,0 +1,97 @@
+@Tutorial(time: 30) {
+    @Intro(title: "현재 face를 읽고 한 턴을 세 번으로 제한하기") {
+        toss simulation과 게임 규칙을 분리해서 생각하고, snapshot → 결과 배열 → roll count → SwiftUI 표시 순서로 연결합니다.
+    }
+
+    @Section(title: "Die state를 실제 숫자로 변환하기") {
+        @Steps {
+            @Step {
+                `Die.calculateScore(for:)`에서 state의 raw value를 현재 face 타입으로 복원합니다.
+
+                @Code(name: "Die.swift — restore face", file: 08-01-Restore-Face.swift)
+            }
+
+            @Step {
+                face map을 사용해 현재 face를 1~6 숫자로 반환합니다.
+
+                @Code(name: "Die.swift — score face", file: 08-02-Calculate-Face-Score.swift)
+            }
+        }
+    }
+
+    @Section(title: "TableSnapshot에서 다섯 결과 읽기") {
+        @ContentAndMedia {
+            장비 상태를 직접 entity transform에서 추측하지 않고 `TabletopGame`의 current snapshot에서 읽습니다. TabletopKit이 관리하는 논리 상태를 기준으로 삼는 것이 핵심입니다.
+        }
+
+        @Steps {
+            @Step {
+                `lastRollResults` 배열을 `YachtGame`의 상태로 추가합니다.
+
+                @Code(name: "YachtGame.swift — results state", file: 08-03-Results-State.swift)
+            }
+
+            @Step {
+                `withCurrentSnapshot`으로 각 `Die`의 state를 가져와 1~6 점수로 변환합니다.
+
+                @Code(name: "YachtGame.swift — snapshot", file: 08-04-Read-Snapshot.swift)
+            }
+
+            @Step {
+                합계는 별도 mutable state로 저장하지 않고 `lastRollResults.reduce`로 계산합니다.
+
+                @Code(name: "YachtGame.swift — total", file: 08-05-Result-Total.swift)
+            }
+        }
+    }
+
+    @Section(title: "세 번 굴리기 규칙 추가하기") {
+        @Steps {
+            @Step {
+                `maximumRollCount = 3`과 현재 `rollCount`를 추가합니다.
+
+                @Code(name: "YachtGame.swift — roll state", file: 08-06-Roll-State.swift)
+            }
+
+            @Step {
+                현재 toss를 시작할 수 있는지를 `canStartRoll` computed property로 계산합니다.
+
+                @Code(name: "YachtGame.swift — canStartRoll", file: 08-07-Can-Start-Roll.swift)
+            }
+
+            @Step {
+                toss가 실제로 끝난 뒤에만 결과를 읽고 `rollCount`를 증가시키는 `finishRoll()`을 만듭니다.
+
+                @Code(name: "YachtGame.swift — finishRoll", file: 08-08-Finish-Roll.swift)
+            }
+
+            @Step {
+                `DiceInteraction`의 `.started`에서는 `canStartRoll`을 검사하고, `.ended`에서는 toss를 요청한 경우에만 `finishRoll()`을 호출합니다.
+
+                @Code(name: "DiceInteraction.swift — roll lifecycle", file: 08-09-Roll-Lifecycle.swift)
+            }
+        }
+    }
+
+    @Section(title: "현재 결과를 SwiftUI로 보여주기") {
+        @Steps {
+            @Step {
+                `die.face.1.fill`부터 `die.face.6.fill`까지 SF Symbol을 선택하는 `DieFaceSymbol`을 만듭니다.
+
+                @Code(name: "DieFaceSymbol.swift", file: 08-10-DieFaceSymbol.swift)
+            }
+
+            @Step {
+                `DiceResultsView`에 다섯 주사위 결과와 `Roll n / 3`, 총합을 표시합니다.
+
+                @Code(name: "DiceResultsView.swift", file: 08-11-DiceResultsView.swift)
+            }
+
+            @Step {
+                결과 패널을 volume의 ornament로 붙여 3D 테이블을 가리지 않는 위치에 둡니다.
+
+                @Code(name: "ContentView.swift — results ornament", file: 08-12-Results-Ornament.swift)
+            }
+        }
+    }
+}

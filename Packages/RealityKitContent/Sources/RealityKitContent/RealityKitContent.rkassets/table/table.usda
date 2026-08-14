@@ -1,0 +1,125 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "Reality Composer Pro Version 1.0 (429.0.0.0.2)"
+    }
+    defaultPrim = "Root"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "Root"
+{
+    quatf xformOp:orient = (1, 0, 0, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+    def Cylinder "Cylinder" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        uniform token axis = "Y"
+        double height = 0.01
+        rel material:binding = </Root/Material> (
+            bindMaterialAs = "weakerThanDescendants"
+        )
+        double radius = 0.5
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        float3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def RealityKitComponent "GroundingShadow"
+        {
+            bool enableIBLShadow = 1
+            bool enableMeshShadow = 1
+            uniform token info:id = "RealityKit.GroundingShadow"
+        }
+    }
+
+    def Material "Material"
+    {
+        reorder nameChildren = ["PreviewSurface", "base", "roughness", "normal", "ao"]
+        prepend token outputs:mtlx:surface.connect = </Root/Material/PreviewSurface.outputs:out>
+        token outputs:realitykit:vertex
+        float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (621, 622.5)
+
+        def Shader "PreviewSurface"
+        {
+            uniform token info:id = "ND_UsdPreviewSurface_surfaceshader"
+            float inputs:clearcoat
+            float inputs:clearcoatRoughness
+            color3f inputs:diffuseColor.connect = </Root/Material/base.outputs:out>
+            color3f inputs:emissiveColor
+            float inputs:ior
+            float inputs:metallic
+            float3 inputs:normal.connect = </Root/Material/normal.outputs:out>
+            float inputs:occlusion.connect = </Root/Material/ao.outputs:out>
+            float inputs:opacity
+            float inputs:opacityThreshold
+            float inputs:roughness.connect = </Root/Material/roughness.outputs:out>
+            token outputs:out
+            float2 ui:nodegraph:node:pos = (390, 622.5)
+            int ui:nodegraph:node:stackingOrder = 3
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["inputs:diffuseColor", "Advanced"]
+        }
+
+        def Shader "base"
+        {
+            uniform token info:id = "ND_tiledimage_color3"
+            asset inputs:file = @textures/fabric_color.png@
+            string inputs:filtertype
+            float2 inputs:uvtiling = (4, 4)
+            color3f outputs:out
+            float2 ui:nodegraph:node:pos = (125, 177.5)
+            int ui:nodegraph:node:stackingOrder = 30
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["inputs:file", "outputs:out"]
+        }
+
+        def Shader "roughness"
+        {
+            uniform token info:id = "ND_tiledimage_float"
+            asset inputs:file = @textures/fabric_roughness.png@
+            string inputs:filtertype
+            float2 inputs:uvtiling = (4, 4)
+            float outputs:out
+            float2 ui:nodegraph:node:pos = (125, 592.5)
+            int ui:nodegraph:node:stackingOrder = 37
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["inputs:file", "outputs:out"]
+        }
+
+        def Shader "normal"
+        {
+            uniform token info:id = "ND_tiledimage_vector3"
+            asset inputs:file = @textures/fabric_normal.png@
+            string inputs:filtertype
+            float2 inputs:realworldtilesize
+            float2 inputs:uvtiling = (4, 4)
+            float3 outputs:out
+            float2 ui:nodegraph:node:pos = (125, 1007.5)
+            int ui:nodegraph:node:stackingOrder = 42
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["inputs:file", "outputs:out"]
+        }
+
+        def Shader "ao"
+        {
+            uniform token info:id = "ND_tiledimage_float"
+            asset inputs:file = @textures/fabric_ao.png@
+            string inputs:filtertype
+            float2 inputs:realworldtilesize
+            float2 inputs:uvtiling = (4, 4)
+            float outputs:out
+            float2 ui:nodegraph:node:pos = (125, 1422.5)
+            int ui:nodegraph:node:stackingOrder = 46
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["inputs:file", "outputs:out"]
+        }
+    }
+
+    def RealityKitComponent "GroundingShadow"
+    {
+        bool enableIBLShadow = 1
+        bool enableMeshShadow = 1
+        uniform token info:id = "RealityKit.GroundingShadow"
+    }
+}
+

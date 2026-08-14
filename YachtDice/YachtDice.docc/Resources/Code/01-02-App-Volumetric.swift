@@ -1,0 +1,4 @@
+WindowGroup {
+    ContentView()
+}
+.windowStyle(.volumetric)

@@ -1,0 +1,81 @@
+@Tutorial(time: 30) {
+    @Intro(title: "Hold된 주사위를 다음 toss에서 제외하기") {
+        Hold 상태를 한 곳에서 관리하고 게임 규칙, 2D UI, 3D 외형이 모두 같은 상태를 바라보도록 만듭니다.
+    }
+
+    @Section(title: "Hold 상태의 기준을 EquipmentIdentifier로 정하기") {
+        @ContentAndMedia {
+            `Die` 객체를 복사해 별도 목록을 만드는 대신 ID 집합만 저장합니다. ID는 TabletopKit에서도 장비를 찾는 기준이므로 interaction 로직과 공유하기 쉽습니다.
+        }
+
+        @Steps {
+            @Step {
+                `heldDieIDs: Set<EquipmentIdentifier>`를 추가합니다.
+
+                @Code(name: "YachtGame.swift — held IDs", file: 09-01-Held-IDs.swift)
+            }
+
+            @Step {
+                `isHeld(_:)`와 `rollableDice`를 계산해 고정 여부와 다시 던질 목록을 구합니다.
+
+                @Code(name: "YachtGame.swift — held helpers", file: 09-02-Held-Helpers.swift)
+            }
+
+            @Step {
+                첫 번째 roll 이후에만 Hold할 수 있도록 `canToggleHold`를 추가합니다.
+
+                @Code(name: "YachtGame.swift — can toggle", file: 09-03-Can-Toggle-Hold.swift)
+            }
+
+            @Step {
+                `toggleHold(at:)`에서 선택한 ID를 Set에 추가하거나 제거합니다.
+
+                @Code(name: "YachtGame.swift — toggle", file: 09-04-Toggle-Hold.swift)
+            }
+        }
+    }
+
+    @Section(title: "다음 toss에서 Hold 주사위 빼기") {
+        @Steps {
+            @Step {
+                `DiceInteraction`을 만들 때 `extraDiceToToss`를 `game.rollableDice` 기준으로 구성합니다.
+
+                @Code(name: "DiceInteraction.swift — rollable extras", file: 09-05-Rollable-Extras.swift)
+            }
+
+            @Step {
+                사용자가 파란 Hold 주사위를 직접 잡았으면 `.started`에서 interaction을 취소합니다.
+
+                @Code(name: "DiceInteraction.swift — cancel held", file: 09-06-Cancel-Held.swift)
+            }
+        }
+    }
+
+    @Section(title: "2D와 3D에서 같은 상태 보여주기") {
+        @Steps {
+            @Step {
+                `heldDieIndices`를 만들어 배열 index 기반 SwiftUI가 같은 Hold 상태를 읽도록 합니다.
+
+                @Code(name: "YachtGame.swift — held indices", file: 09-07-Held-Indices.swift)
+            }
+
+            @Step {
+                `DiceResultsView`에서 Hold 주사위 SF Symbol을 accent color와 lock badge로 표시합니다.
+
+                @Code(name: "DiceResultsView.swift — hold feedback", file: 09-08-Hold-UI.swift)
+            }
+
+            @Step {
+                `Die.setHeldAppearance`에서 실제 3D material의 tint도 `systemBlue`로 바꿉니다.
+
+                @Code(name: "Die.swift — held appearance", file: 09-09-Held-Appearance.swift)
+            }
+
+            @Step {
+                새로운 턴이 시작되면 모든 주사위 외형과 Hold ID를 함께 초기화합니다.
+
+                @Code(name: "YachtGame.swift — clear held", file: 09-10-Clear-Held.swift)
+            }
+        }
+    }
+}

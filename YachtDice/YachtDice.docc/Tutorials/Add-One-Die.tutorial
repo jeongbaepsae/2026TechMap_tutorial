@@ -1,0 +1,107 @@
+@Tutorial(time: 35) {
+    @Intro(title: "한 개의 주사위를 EntityEquipment로 만들기") {
+        다섯 개를 바로 만들지 않고 한 개의 D6만 추가해서 `EntityEquipment`, `RawValueState`, `TossableRepresentation`의 역할을 분리해 봅니다.
+    }
+
+    @Section(title: "주사위에 고유 ID 주기") {
+        @ContentAndMedia {
+            TabletopKit은 entity의 Swift 객체 주소가 아니라 `EquipmentIdentifier`로 장비를 찾습니다. 테이블 ID와 겹치지 않도록 dice용 범위를 정합니다.
+        }
+
+        @Steps {
+            @Step {
+                index를 받아 고유한 dice ID를 만드는 helper를 추가합니다.
+
+                @Code(name: "EquipmentIdentifier+Yacht.swift — dice ID", file: 04-01-Dice-ID.swift)
+            }
+        }
+    }
+
+    @Section(title: "EntityEquipment의 최소 상태 만들기") {
+        @ContentAndMedia {
+            `EntityEquipment`는 보이는 `entity`, 논리 ID, 초기 `State`를 연결합니다. 이 프로젝트는 정수 raw value로 현재 위쪽 face를 저장하기 위해 `RawValueState`를 사용합니다.
+        }
+
+        @Steps {
+            @Step {
+                `Die`가 `EntityEquipment`을 채택하고 `entity`, `id`, `initialState`를 선언합니다.
+
+                @Code(name: "Die.swift — EntityEquipment", file: 04-02-Die-Equipment.swift)
+            }
+
+            @Step {
+                RealityKitContent의 `dice/D6` 모델을 `ModelEntity.load`로 불러옵니다.
+
+                @Code(name: "Die.swift — model", file: 04-03-Die-Model.swift)
+            }
+
+            @Step {
+                첫 주사위를 table space 중앙에 놓을 `Pose2D`를 만듭니다.
+
+                @Code(name: "Die.swift — pose", file: 04-04-Die-Pose.swift)
+            }
+        }
+    }
+
+    @Section(title: "주사위를 던질 수 있는 형태로 설명하기") {
+        @ContentAndMedia {
+            3D 모델이 정육면체처럼 보여도 TabletopKit의 toss simulation은 그 사실을 자동으로 추론하지 않습니다. `TossableRepresentation`으로 물리적으로 어떤 형태인지 알려줘야 합니다.
+        }
+
+        @Steps {
+            @Step {
+                `Die`에 `tossableRepresentation`을 저장합니다.
+
+                @Code(name: "Die.swift — tossable property", file: 04-05-Die-Tossable-Property.swift)
+            }
+
+            @Step {
+                D6에 `TossableRepresentation.cube(height:)`를 사용합니다. 여기서 height는 toss simulation이 사용하는 cube 크기입니다.
+
+                @Code(name: "Die.swift — cube representation", file: 04-06-Die-Cube.swift)
+            }
+        }
+    }
+
+    @Section(title: "논리적인 face를 1~6 점수로 바꾸기") {
+        @ContentAndMedia {
+            toss 결과는 단순히 `Int` 1~6을 주지 않습니다. cube representation의 논리적 face를 반환하므로 게임 점수와 연결하는 face map이 필요합니다.
+        }
+
+        @Steps {
+            @Step {
+                `TossableFaceMap`이 face와 정수 값을 서로 변환하는 역할을 하도록 helper 타입을 준비합니다.
+
+                @Code(name: "FaceMappingHelpers.swift — map protocol", file: 04-07-FaceMap-Protocol.swift)
+            }
+
+            @Step {
+                cube의 여섯 face를 1부터 6까지 매핑한 `cubeFaceMap`을 정의합니다.
+
+                @Code(name: "FaceMappingHelpers.swift — cube map", file: 04-08-Cube-FaceMap.swift)
+            }
+
+            @Step {
+                `Die`의 초기 `RawValueState`에 초기 face의 raw value와 table parent ID, pose, entity를 함께 저장합니다.
+
+                @Code(name: "Die.swift — initial state", file: 04-09-Die-InitialState.swift)
+            }
+        }
+    }
+
+    @Section(title: "첫 번째 주사위를 TableSetup에 추가하기") {
+        @Steps {
+            @Step {
+                `cubeDie(index:)` factory로 D6 한 개를 만듭니다.
+
+                @Code(name: "Die.swift — factory", file: 04-10-Die-Factory.swift)
+            }
+
+            @Step {
+                `setup.add(equipment:)`로 첫 주사위를 game setup에 등록합니다.
+
+                @Code(name: "YachtGame.swift — one die", file: 04-11-Add-One-Die.swift)
+            }
+        }
+    }
+}

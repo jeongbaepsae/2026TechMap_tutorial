@@ -1,0 +1,99 @@
+name: Deploy DocC to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "YachtDice/**"
+      - "YachtDice.xcodeproj/**"
+      - ".github/workflows/deploy-docc.yml"
+  workflow_dispatch:
+
+# Only one Pages deployment at a time; a new push cancels an in-flight one.
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  DOCC_HOSTING_BASE_PATH: ${{ github.event.repository.name }}
+
+jobs:
+  build:
+    name: Build DocC Archive
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -switch /Applications/Xcode_26.app/Contents/Developer
+
+      - name: Show Xcode and SDK versions
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+
+      - name: Build documentation archive
+        run: |
+          set -o pipefail
+          xcodebuild docbuild \
+            -project YachtDice.xcodeproj \
+            -scheme YachtDice \
+            -destination "generic/platform=visionOS" \
+            -derivedDataPath .build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            DOCC_HOSTING_BASE_PATH="${DOCC_HOSTING_BASE_PATH}"
+
+      - name: Locate the .doccarchive
+        id: locate-archive
+        run: |
+          ARCHIVE_PATH=$(find .build/DerivedData -type d -name "*.doccarchive" -print -quit)
+          if [ -z "$ARCHIVE_PATH" ]; then
+            echo "::error::No .doccarchive was produced by 'xcodebuild docbuild'. Check that the YachtDice scheme is shared and that the YachtDice.docc catalog is a member of the YachtDice target."
+            exit 1
+          fi
+          echo "Found archive at $ARCHIVE_PATH"
+          echo "archive_path=$ARCHIVE_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Transform archive for static hosting
+        run: |
+          set -e
+          mkdir -p site
+          "$(xcrun --find docc)" process-archive \
+            transform-for-static-hosting "${{ steps.locate-archive.outputs.archive_path }}" \
+            --output-path site \
+            --hosting-base-path "${DOCC_HOSTING_BASE_PATH}"
+          touch site/.nojekyll
+
+      - name: Verify static site output
+        run: |
+          if [ ! -f "site/index.html" ] && [ ! -f "site/documentation/yachtdice/index.html" ]; then
+            echo "::warning::Could not find an obvious index.html under site/. The archive may use a different root path; check the DocC catalog name."
+          fi
+          ls -R site | head -n 50
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

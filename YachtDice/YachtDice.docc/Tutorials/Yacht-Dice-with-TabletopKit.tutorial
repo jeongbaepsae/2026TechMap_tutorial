@@ -1,0 +1,44 @@
+@Tutorials(name: "Yacht Dice with TabletopKit") {
+    @Intro(title: "처음부터 천천히 TabletopKit 익히기") {
+        한 단계에서 한 가지 개념을 추가하며 volumetric window부터 Yacht 점수표까지 완성합니다.
+    }
+
+    @Chapter(name: "1. 공간과 게임판 준비") {
+        @Image(source: chapter-tabletop.svg, alt: "A simple tabletop in a volumetric window.")
+
+        SwiftUI volume, RealityKit entity, TabletopKit table을 서로 연결합니다.
+
+        @TutorialReference(tutorial: "doc:Create-a-Volumetric-Tabletop-App")
+        @TutorialReference(tutorial: "doc:Create-the-Tabletop-Surface")
+        @TutorialReference(tutorial: "doc:Add-a-Player-Seat")
+    }
+
+    @Chapter(name: "2. 주사위를 TabletopKit 장비로 만들기") {
+        @Image(source: chapter-tabletop.svg, alt: "Dice placed on a tabletop.")
+
+        한 개의 주사위부터 시작해서 고유 ID, 초기 상태, toss representation, face mapping을 이해하고 다섯 개로 확장합니다.
+
+        @TutorialReference(tutorial: "doc:Add-One-Die")
+        @TutorialReference(tutorial: "doc:Expand-to-Five-Dice")
+    }
+
+    @Chapter(name: "3. 주사위 상호작용 만들기") {
+        @Image(source: chapter-interaction.svg, alt: "Dice moving above a tabletop to represent a toss interaction.")
+
+        `TabletopInteraction`의 phase를 하나씩 확인하고, 한 개의 주사위를 던진 뒤 다섯 개를 함께 던집니다.
+
+        @TutorialReference(tutorial: "doc:Toss-One-Die")
+        @TutorialReference(tutorial: "doc:Toss-Five-Dice")
+        @TutorialReference(tutorial: "doc:Read-Dice-Results-and-Limit-Rolls")
+        @TutorialReference(tutorial: "doc:Hold-Dice")
+    }
+
+    @Chapter(name: "4. Yacht 게임 규칙 완성") {
+        @Image(source: chapter-scoring.svg, alt: "A Yacht score sheet beside five dice.")
+
+        3D 게임과 분리된 순수 Swift 점수 계산기를 만들고 점수표와 보너스를 연결합니다.
+
+        @TutorialReference(tutorial: "doc:Calculate-Yacht-Scores")
+        @TutorialReference(tutorial: "doc:Complete-the-Score-Sheet")
+    }
+}

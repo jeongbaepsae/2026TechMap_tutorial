@@ -1,0 +1,6 @@
+This project contains source code derived from Apple sample code.
+
+Apple-derived portions are subject to the Apple Sample Code License available at:
+https://developer.apple.com/support/downloads/terms/apple-sample-code/Apple-Sample-Code-License.pdf
+
+See README.md for the source sample attribution.

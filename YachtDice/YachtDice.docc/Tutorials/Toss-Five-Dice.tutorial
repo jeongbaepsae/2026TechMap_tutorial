@@ -1,0 +1,77 @@
+@Tutorial(time: 30) {
+    @Intro(title: "한 번의 gesture로 다섯 주사위 함께 던지기") {
+        사용자가 직접 잡은 한 개를 기준으로 나머지 네 개도 같은 interaction에 참여시키는 과정을 단계별로 추가합니다.
+    }
+
+    @Section(title: "controlled die와 나머지 주사위 구분하기") {
+        @Steps {
+            @Step {
+                `extraDiceToToss` 배열을 만들고 controlled die를 제외한 나머지 주사위를 저장합니다.
+
+                @Code(name: "DiceInteraction.swift — extra dice", file: 07-01-Extra-Dice.swift)
+            }
+        }
+    }
+
+    @Section(title: "gesture 중 여러 주사위를 하나의 그룹처럼 움직이기") {
+        @ContentAndMedia {
+            사용자가 한 주사위를 집고 있는 동안 나머지 주사위도 근처에서 함께 이동하게 하면 다섯 개를 한 번에 던진다는 피드백을 줄 수 있습니다. `MoveEquipmentAction`으로 parent 관계를 임시 변경합니다.
+        }
+
+        @Steps {
+            @Step {
+                `Pose2D`의 위치와 회전 타입을 직접 사용하는 이 파일에 `internal import Spatial`을 추가합니다. `TabletopKit`을 import했다고 해서 `Spatial`의 선언이 이 파일에 자동으로 노출되는 것은 아닙니다.
+
+                @Code(name: "DiceInteraction.swift — Spatial import", file: 07-02-Spatial-Import.swift)
+            }
+
+            @Step {
+                controlled die 주위에 배치할 `Pose2D` 배열을 준비합니다.
+
+                @Code(name: "DiceInteraction.swift — group poses", file: 07-03-Group-Poses.swift)
+            }
+
+            @Step {
+                `.started`에서 extra dice를 controlled die의 child로 이동하는 action을 추가합니다.
+
+                @Code(name: "DiceInteraction.swift — group", file: 07-04-Group-Dice.swift)
+            }
+        }
+    }
+
+    @Section(title: "다섯 개 모두 toss하기") {
+        @Steps {
+            @Step {
+                controlled die의 toss 뒤에 extra dice 각각의 `interaction.toss`를 호출합니다.
+
+                @Code(name: "DiceInteraction.swift — toss extras", file: 07-05-Toss-Extras.swift)
+            }
+
+            @Step {
+                `onTossStart`에서 outcome ID와 일치하는 `Die`를 찾도록 범위를 다섯 주사위 전체로 넓힙니다.
+
+                @Code(name: "DiceInteraction.swift — find outcome die", file: 07-06-Find-Outcome-Die.swift)
+            }
+
+            @Step {
+                toss가 시작된 extra dice는 다시 `.tableID`의 child로 이동시켜 각 주사위가 독립적으로 놓이게 합니다.
+
+                @Code(name: "DiceInteraction.swift — ungroup", file: 07-07-Ungroup-Dice.swift)
+            }
+        }
+    }
+
+    @Section(title: "한 gesture에서 toss를 한 번만 요청하기") {
+        @ContentAndMedia {
+            `.update`는 반복 호출되므로 `.ended` 조건만으로는 같은 toss 요청이 중복될 수 있습니다. boolean flag로 실제 요청 여부를 기억합니다.
+        }
+
+        @Steps {
+            @Step {
+                `didRequestToss`를 추가하고 toss 직전에 `true`로 바꿉니다.
+
+                @Code(name: "DiceInteraction.swift — request flag", file: 07-08-Toss-Flag.swift)
+            }
+        }
+    }
+}

@@ -1,0 +1,96 @@
+@Tutorial(time: 25) {
+    @Intro(title: "다섯 주사위를 함께 toss하기") {
+        이번 단원에서는 `TabletopInteraction`을 연결합니다. 먼저 사용자가 집은 한 dice만 toss한 뒤, 나머지 네 개를 같은 interaction에 묶어 Yacht처럼 다섯 개가 함께 굴러가도록 확장합니다.
+    }
+
+    @Section(title: "SwiftUI view와 TabletopInteraction 연결하기") {
+        @ContentAndMedia {
+            `.tabletopGame` modifier는 RealityView의 entity와 TabletopKit game state 사이에 interaction을 연결합니다. 사용자가 equipment를 조작하기 시작하면 delegate 역할을 하는 `DiceInteraction`을 만듭니다.
+        }
+        @Steps {
+            @Step {
+                먼저 `ContentView.swift`를 엽니다. `RealityView`에 `.tabletopGame`을 연결합니다. 이 modifier가 SwiftUI의 RealityView와 `TabletopGame` 사이를 이어 주면서 사용자의 spatial gesture가 TabletopKit equipment interaction으로 전달됩니다.
+                @Code(name: "ContentView.swift", file: 04-01-ContentView-TabletopInteraction.swift, previousFile: 02-04-ContentView-Reposition.swift)
+            }
+            @Step {
+                `DiceInteraction.swift` 파일을 새로 만듭니다. controlled die를 찾은 뒤 gesture가 끝나면 `interaction.toss`를 요청하도록 interaction의 기본 흐름을 구현합니다.
+                @Code(name: "DiceInteraction.swift", file: 04-02-DiceInteraction-One.swift, reset: true)
+            }
+        }
+    }
+
+    @Section(title: "한 개의 gesture로 다섯 개 toss하기") {
+        @ContentAndMedia {
+            사용자가 직접 집은 dice를 `controlledDie`, 함께 움직일 나머지를 `extraDiceToToss`로 나눕니다. 시작할 때 네 개를 controlled die의 child로 묶고, toss 결과가 결정되면 다시 table 좌표계로 돌려놓습니다.
+        }
+        @Steps {
+            @Step {
+                interaction을 다섯 dice로 확장합니다. 사용자가 잡은 `controlledDie`를 기준으로 나머지 dice의 상대 pose를 계산해 하나의 묶음처럼 움직인 뒤, 놓는 순간에는 각 die에 개별 toss를 요청합니다.
+                @Code(name: "DiceInteraction.swift", file: 04-03-DiceInteraction-Five.swift, previousFile: 04-02-DiceInteraction-One.swift)
+            }
+        }
+    }
+
+    @Section(title: "실행해서 확인하기") {
+        @ContentAndMedia {
+            다섯 dice 중 하나를 집어 움직인 뒤 놓으면 다섯 개가 함께 toss되어야 합니다. 이 시점에는 아직 화면에 1~6 결과를 표시하지 않습니다.
+
+            이 시점부터 dice의 pose는 고정된 초기값만 사용하는 것이 아니라 `TabletopInteraction`에 의해 갱신됩니다. 사용자가 직접 잡은 die가 interaction의 기준이 되고, 나머지 네 개는 그 기준에 묶여 함께 이동한 뒤 각자의 toss 결과를 갖습니다.
+
+            toss가 끝나면 TabletopKit은 각 die의 최종 face를 snapshot에 남깁니다. 이 값은 아직 Yacht의 1~6 숫자가 아니므로, 다음 단계에서는 face mapping을 통해 게임에서 사용할 결과로 해석합니다.
+        }
+        @Steps {
+            @Step {
+                앱에서 dice 하나를 집어 움직인 뒤 놓고, 다섯 dice가 함께 toss되는지 확인합니다.
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            `controlledDie`는 무엇인가요?
+            @Choice(isCorrect: true) {
+                사용자가 직접 집어서 interaction을 시작한 dice입니다.
+                @Justification(reaction: "정답입니다.") {
+                    나머지 dice는 이 equipment를 기준으로 묶습니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                항상 첫 번째 dice입니다.
+                @Justification(reaction: "아닙니다.") {
+                    사용자가 어떤 dice를 집었는지에 따라 달라집니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            gesture가 끝난 뒤 `interaction.toss`를 호출하는 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                TabletopKit에 toss simulation을 요청하기 위해서입니다.
+                @Justification(reaction: "맞아요.") {
+                    놓는 순간부터 toss outcome을 계산합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                SwiftUI animation을 시작하기 위해서입니다.
+                @Justification(reaction: "아닙니다.") {
+                    TabletopKit interaction API입니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            extra dice를 toss 후 다시 table의 child로 옮기는 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                interaction 중 임시로 controlled die 아래에 묶었던 좌표계를 원래 tabletop 기준으로 복구하기 위해서입니다.
+                @Justification(reaction: "정답입니다.") {
+                    임시 grouping을 해제하는 과정입니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                dice ID를 새로 만들기 위해서입니다.
+                @Justification(reaction: "아닙니다.") {
+                    ID는 바뀌지 않습니다.
+                }
+            }
+        }
+    }
+}

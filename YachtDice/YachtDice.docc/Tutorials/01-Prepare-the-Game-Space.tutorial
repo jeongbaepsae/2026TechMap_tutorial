@@ -1,0 +1,142 @@
+@Tutorial(time: 20, projectFiles: "YachtDice-TutorialResources.zip") {
+    @Intro(title: "Yacht Dice 프로젝트와 3D asset 준비하기") {
+        Xcode의 visionOS App 템플릿에서 시작해 Yacht Dice가 사용할 volume과 `RealityKitContent` package를 준비합니다. table과 D6 asset을 먼저 넣어 두고, 이후 RealityKit과 TabletopKit에서 같은 asset을 사용할 수 있는 기반을 만듭니다.
+    }
+
+    @Section(title: "Xcode에서 visionOS 프로젝트 만들기") {
+        @ContentAndMedia {
+            Yacht Dice는 table과 dice를 깊이 방향으로 배치하므로 처음부터 **Volume** scene으로 시작합니다. Xcode의 visionOS App 템플릿을 사용하면 SwiftUI scene, `RealityView`, Reality Composer Pro용 `RealityKitContent` package를 같은 프로젝트에서 구성할 수 있습니다.
+        }
+        @Steps {
+            @Step {
+                Xcode에서 **File > New > Project**를 선택하고 **visionOS > App** 템플릿을 선택합니다.
+            }
+            @Step {
+                Product Name을 `YachtDice`로 지정하고 Initial Scene은 **Volume**을 선택합니다. 이 튜토리얼에서는 별도의 Immersive Space를 사용하지 않습니다.
+            }
+            @Step {
+                Reality Composer Pro content를 포함해 프로젝트를 생성합니다. Project Navigator에서 `YachtDiceApp.swift`, `ContentView.swift`, `Packages/RealityKitContent`가 만들어졌는지 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "table과 D6 asset 준비하기") {
+        @ContentAndMedia {
+            이 튜토리얼은 TabletopKit의 구조와 interaction에 집중하므로 직접 모델링하는 대신 table과 D6 asset을 제공합니다. 이 페이지에서 `YachtDice-TutorialResources.zip`을 내려받으면 `dice`와 `table` 폴더를 사용할 수 있습니다.
+
+            두 폴더를 Xcode가 만든 `RealityKitContent.rkassets` 안으로 복사합니다. `table` 폴더에는 `table.usda`가 참조하는 texture가 함께 들어 있으므로 폴더 전체를 유지해야 합니다. 이후 Swift 코드에서는 `realityKitContentBundle`을 통해 이 asset들을 이름으로 직접 불러옵니다. 따라서 D6를 별도의 `Scene.usda` 안에 미리 배치할 필요는 없습니다.
+        }
+        @Steps {
+            @Step {
+                `Packages/RealityKitContent/Package.realitycomposerpro`를 열어 Reality Composer Pro에서 content package를 확인합니다.
+            }
+            @Step {
+                `YachtDice-TutorialResources.zip`을 내려받고 압축을 풉니다. 안에 있는 `dice`와 `table` 폴더를 새 프로젝트의 `RealityKitContent.rkassets` 안으로 복사합니다. `table.usda`가 texture를 상대 경로로 참조하므로 `table` 폴더 전체를 그대로 옮깁니다.
+            }
+            @Step {
+                Project Navigator에서 최종 경로가 `RealityKitContent.rkassets/table/table.usda`와 `RealityKitContent.rkassets/dice/D6.usdz`인지 확인합니다. 이후 코드는 각각 `"table/table"`, `"dice/D6"`라는 이름으로 asset을 로드합니다.
+            }
+        }
+    }
+
+    @Section(title: "Volume의 시작 구조 확인하기") {
+        @ContentAndMedia {
+            Volume 템플릿의 `WindowGroup`은 일반적인 SwiftUI scene처럼 `ContentView`를 표시하면서 `.windowStyle(.volumetric)`으로 깊이를 가진 공간을 만듭니다. 앞에서 준비한 3D asset은 아직 화면에 올리지 않고, 먼저 이 공간과 게임의 root entity를 연결합니다.
+        }
+        @Steps {
+            @Step {
+                먼저 Xcode가 만든 `YachtDiceApp.swift`를 엽니다. 앱의 첫 scene이 `ContentView`를 담은 volumetric `WindowGroup`으로 구성되어 있습니다.
+                @Code(name: "YachtDiceApp.swift", file: 01-01-YachtDiceApp-Basic.swift, reset: true)
+            }
+            @Step {
+                Yacht Dice의 table과 dice가 일정한 크기의 좌표계를 사용하도록 volume의 기본 크기를 1m³로 지정합니다. `.defaultSize`의 width, height, depth는 각각 volume의 초기 폭, 높이, 깊이를 의미합니다.
+                @Code(name: "YachtDiceApp.swift", file: 01-02-YachtDiceApp-Volume.swift, previousFile: 01-01-YachtDiceApp-Basic.swift)
+            }
+            @Step {
+                이제 템플릿이 만든 `ContentView.swift`를 확인합니다. 기본 `RealityView`는 `RealityKitContent` package의 `Scene` entity를 불러와 volume 안에 추가합니다. 이후에는 이 demo scene 대신 Yacht Dice가 관리하는 root entity를 연결합니다.
+                @Code(name: "ContentView.swift", file: 01-00-ContentView-Template.swift, reset: true)
+            }
+        }
+    }
+
+    @Section(title: "게임의 RealityKit root 연결하기") {
+        @ContentAndMedia {
+            SwiftUI는 volume의 생명주기와 UI를 담당하고, RealityKit은 그 안의 3D entity를 관리합니다. table과 dice를 하나의 장면으로 다루기 위해 공통 부모 entity를 `YachtGame`이 소유하도록 구성합니다.
+        }
+        @Steps {
+            @Step {
+                `YachtGame.swift` 파일을 새로 만듭니다. `root`는 앞으로 table과 dice가 연결될 RealityKit entity hierarchy의 시작점입니다.
+                @Code(name: "YachtGame.swift", file: 01-03-YachtGame-Root.swift, reset: true)
+            }
+            @Step {
+                다시 `YachtDiceApp.swift`로 돌아갑니다. `YachtGame`을 앱이 소유하는 상태로 만들고 environment에 전달하면 `ContentView`와 이후의 결과 UI, 점수표가 같은 game instance를 사용할 수 있습니다.
+                @Code(name: "YachtDiceApp.swift", file: 01-04-YachtDiceApp-Environment.swift, previousFile: 01-02-YachtDiceApp-Volume.swift)
+            }
+            @Step {
+                다시 `ContentView.swift`를 엽니다. 템플릿에서 불러오던 demo `Scene` 대신 environment의 `game.root`를 `RealityView`에 추가합니다. 이후 생성하는 모든 3D content는 이 root 아래에서 관리됩니다.
+                @Code(name: "ContentView.swift", file: 01-05-ContentView-RealityView.swift, previousFile: 01-00-ContentView-Template.swift)
+            }
+        }
+    }
+
+    @Section(title: "실행해서 확인하기") {
+        @ContentAndMedia {
+            앱을 실행하면 1m³ 크기의 volume이 열립니다. 아직 table이나 dice를 `root`에 추가하지 않았으므로 공간 안이 비어 있는 것이 정상입니다.
+
+            현재 구조에서 SwiftUI는 volume을 만들고, `YachtGame.root`는 RealityKit content의 공통 부모가 됩니다. 다음 단원에서는 이 root에 실제 table entity를 추가하고 같은 entity를 TabletopKit의 tabletop으로 등록합니다.
+        }
+        @Steps {
+            @Step {
+                Simulator에서 volume이 정상적으로 열리고 오류 없이 빈 공간이 표시되는지 확인합니다.
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Initial Scene을 Volume으로 선택하는 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                table과 dice를 깊이 방향으로 배치할 3D 공간이 필요하기 때문입니다.
+                @Justification(reaction: "정답입니다.") {
+                    Yacht Dice의 RealityKit content는 volumetric window 안에 배치됩니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                TabletopKit은 Immersive Space에서만 사용할 수 있기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    이 샘플은 Immersive Space 없이 volume에서 TabletopKit을 사용합니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            `YachtGame.root`의 역할은 무엇인가요?
+            @Choice(isCorrect: true) {
+                게임의 3D content를 한 RealityKit entity hierarchy 아래에서 관리합니다.
+                @Justification(reaction: "맞아요.") {
+                    이후 table과 dice가 이 root를 기준으로 같은 장면에 연결됩니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Yacht 점수를 계산합니다.
+                @Justification(reaction: "아닙니다.") {
+                    점수 계산은 별도의 게임 로직이 담당합니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            D6를 `Scene.usda` 안에 미리 배치하지 않아도 되는 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                `realityKitContentBundle`에서 `dice/D6` asset을 이름으로 직접 로드하기 때문입니다.
+                @Justification(reaction: "정답입니다.") {
+                    `RealityKitContent.rkassets` 안의 asset은 package resource로 직접 불러올 수 있습니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                TabletopKit이 실행 중에 D6 모델을 자동으로 생성하기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    시각적인 D6 모델은 RealityKit asset에서 로드합니다.
+                }
+            }
+        }
+    }
+}

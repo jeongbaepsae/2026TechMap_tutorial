@@ -5,7 +5,6 @@ struct YachtScoreSheetView: View {
     let previews: [YachtCategory: Int]
     let canCommitScore: Bool
     let onSelectCategory: (YachtCategory) -> Void
-    let onStartNewGame: () -> Void
 
     private var upperCategories: [YachtCategory] {
         YachtCategory.allCases.filter { $0.section == .upper }
@@ -21,18 +20,14 @@ struct YachtScoreSheetView: View {
                 .font(.headline)
 
             HStack(alignment: .top, spacing: 20) {
-                VStack(alignment: .leading, spacing: 12) {
-                    YachtScoreSectionView(
-                        title: "Numbers",
-                        categories: upperCategories,
-                        scoreSheet: scoreSheet,
-                        previews: previews,
-                        canCommitScore: canCommitScore,
-                        onSelectCategory: onSelectCategory
-                    )
-
-                    NumbersBonusView(scoreSheet: scoreSheet)
-                }
+                YachtScoreSectionView(
+                    title: "Numbers",
+                    categories: upperCategories,
+                    scoreSheet: scoreSheet,
+                    previews: previews,
+                    canCommitScore: canCommitScore,
+                    onSelectCategory: onSelectCategory
+                )
 
                 Divider()
 
@@ -53,17 +48,6 @@ struct YachtScoreSheetView: View {
                 Spacer()
                 Text("\(scoreSheet.totalScore)")
                     .fontWeight(.bold)
-            }
-
-            if scoreSheet.isComplete {
-                VStack(spacing: 10) {
-                    Text("Game Complete")
-                        .font(.headline)
-                    Text("Final Score: \(scoreSheet.totalScore)")
-                        .fontWeight(.bold)
-                    Button("Start New Game", action: onStartNewGame)
-                }
-                .frame(maxWidth: .infinity)
             }
         }
         .padding(20)

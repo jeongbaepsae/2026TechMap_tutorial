@@ -1,0 +1,112 @@
+@Tutorial(time: 20) {
+    @Intro(title: "Numbers bonus와 게임 종료 완성하기") {
+        마지막으로 Numbers section의 보너스와 전체 category 완료 상태를 계산합니다. 모든 점수를 기록하면 final score와 새 게임 버튼을 표시합니다.
+    }
+
+    @Section(title: "보너스와 완료 상태 계산하기") {
+        @ContentAndMedia {
+            Numbers bonus는 UI가 아니라 score model의 규칙입니다. 따라서 목표 점수와 보너스 값을 별도 rule로 두고 `YachtScoreSheet`가 total과 complete 상태를 계산하게 합니다.
+        }
+        @Steps {
+            @Step {
+                `YachtBonusRule.swift` 파일을 새로 만듭니다. Numbers 목표와 보너스 값을 한곳에 모아 score model이 같은 규칙을 사용하게 합니다.
+                @Code(name: "YachtBonusRule.swift", file: 09-01-YachtBonusRule.swift, reset: true)
+            }
+            @Step {
+                이제 `YachtScoreSheet.swift`를 엽니다. Numbers subtotal, bonus, total, `isComplete`, `reset()`을 추가합니다. 이미 저장된 `entries`를 한 곳에서 집계하면 UI와 `YachtGame`이 동일한 최종 점수와 완료 상태를 사용할 수 있습니다.
+                @Code(name: "YachtScoreSheet.swift", file: 09-02-YachtScoreSheet-Complete.swift, previousFile: 08-02-YachtScoreSheet-Basic.swift)
+            }
+            @Step {
+                이제 `YachtGame.swift`로 이동합니다. finished 상태를 roll, Hold, score commit 조건에 반영하고 `startNewGame()`을 추가합니다.
+                @Code(name: "YachtGame.swift", file: 09-03-YachtGame-Complete.swift, previousFile: 08-03-YachtGame-RecordScore.swift)
+            }
+        }
+    }
+
+    @Section(title: "완료 상태를 UI에 보여주기") {
+        @ContentAndMedia {
+            보너스 진행도와 final score는 model에서 계산된 값을 읽어 표시만 합니다. UI는 규칙을 다시 계산하지 않습니다.
+        }
+        @Steps {
+            @Step {
+                `NumbersBonusView.swift` 파일을 새로 만듭니다. Numbers subtotal이 목표 점수에 얼마나 가까운지 보여주는 progress UI를 구성합니다.
+                @Code(name: "NumbersBonusView.swift", file: 09-04-NumbersBonusView.swift, reset: true)
+            }
+            @Step {
+                이제 `YachtScoreSheetView.swift`를 엽니다. 기존 Numbers 영역 아래에 bonus progress를 추가합니다.
+                @Code(name: "YachtScoreSheetView.swift", file: 09-05-YachtScoreSheetView-Bonus.swift, previousFile: 08-06-YachtScoreSheetView-Basic.swift)
+            }
+            @Step {
+                게임이 끝났을 때 final score와 새 게임 button을 표시하도록 완료 상태 UI를 추가합니다.
+                @Code(name: "YachtScoreSheetView.swift", file: 09-06-YachtScoreSheetView-Complete.swift, previousFile: 09-05-YachtScoreSheetView-Bonus.swift)
+            }
+            @Step {
+                마지막으로 `ContentView.swift`로 돌아옵니다. finished 상태와 `startNewGame()` action을 두 ornament에 전달해 최종 UI와 game state를 연결합니다.
+                @Code(name: "ContentView.swift", file: 09-07-ContentView-Complete.swift, previousFile: 08-07-ContentView-ScoreSheet.swift)
+            }
+        }
+    }
+
+    @Section(title: "완성된 게임 확인하기") {
+        @ContentAndMedia {
+            모든 category를 채우면 `Game Complete`와 final score가 표시되고 더 이상 dice를 굴리거나 Hold할 수 없어야 합니다. `Start New Game`을 누르면 score sheet와 turn state가 모두 초기화됩니다.
+
+            **최종 구조**: SwiftUI는 UI, RealityKit은 3D entity, TabletopKit은 tabletop interaction, `YachtGame`과 scoring 타입은 Yacht 규칙을 담당합니다.
+
+            table과 dice의 3D 상태는 RealityKit과 TabletopKit이 다루고, 한 턴의 규칙과 점수 상태는 `YachtGame`과 scoring model이 다룹니다. 각 계층이 자신의 상태를 책임지고 필요한 지점에서만 연결되는 것이 완성된 구조의 핵심입니다.
+        }
+        @Steps {
+            @Step {
+                모든 category를 기록한 뒤 final score와 `Start New Game`이 나타나는지 확인하고, 새 게임을 시작해 score sheet와 turn state가 초기화되는지 확인합니다.
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Numbers bonus 계산을 `NumbersBonusView`가 아니라 `YachtScoreSheet`에 두는 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                보너스는 표시 방식이 아니라 게임 규칙이기 때문입니다.
+                @Justification(reaction: "정답입니다.") {
+                    UI와 무관하게 동일한 결과가 나와야 합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                SwiftUI View는 Int를 계산할 수 없기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    기술적 제한 때문이 아니라 책임 분리 때문입니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            `isGameFinished`가 true일 때 막아야 하는 동작은 무엇인가요?
+            @Choice(isCorrect: true) {
+                새로운 roll, Hold 변경, 추가 score commit입니다.
+                @Justification(reaction: "맞아요.") {
+                    완료된 게임의 상태를 더 바꾸지 않게 합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                score sheet를 화면에 표시하는 것 자체입니다.
+                @Justification(reaction: "아닙니다.") {
+                    final score는 계속 보여야 합니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            새 게임을 시작할 때 함께 초기화해야 하는 것은 무엇인가요?
+            @Choice(isCorrect: true) {
+                score sheet, roll count, Hold, 마지막 dice 결과입니다.
+                @Justification(reaction: "정답입니다.") {
+                    새로운 game state로 돌아가야 합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                RealityKitContent package 파일입니다.
+                @Justification(reaction: "아닙니다.") {
+                    asset 자체를 초기화할 필요는 없습니다.
+                }
+            }
+        }
+    }
+}

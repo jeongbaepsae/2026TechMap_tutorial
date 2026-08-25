@@ -1,1 +1,0 @@
-setup.add(seat: playerSeat)

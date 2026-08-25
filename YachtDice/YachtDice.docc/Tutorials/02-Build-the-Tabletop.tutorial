@@ -1,0 +1,106 @@
+@Tutorial(time: 20) {
+    @Intro(title: "Tabletop과 player seat 만들기") {
+        이번 단원에서는 보이는 RealityKit table을 `EntityTabletop`으로 만들고 `TabletopGame`에 연결합니다. 마지막에는 local player가 사용할 seat까지 등록합니다.
+    }
+
+    @Section(title: "3D table을 TabletopKit tabletop으로 만들기") {
+        @ContentAndMedia {
+            `EntityTabletop`은 RealityKit entity에 TabletopKit이 이해할 **ID와 tabletop shape**를 더합니다. `RoundTabletop`은 앞에서 `RealityKitContent.rkassets/table/`에 넣은 `table.usda`를 `"table/table"` 경로로 불러와, 같은 table을 시각적 object이자 논리적 game board로 사용합니다.
+        }
+        @Steps {
+            @Step {
+                `RoundTabletop.swift` 파일을 새로 만듭니다. `Entity.load(named:in:)`에 `"table/table"`과 `realityKitContentBundle`을 전달해 table asset을 불러오고, 같은 타입에서 ID와 round shape까지 정의합니다.
+                @Code(name: "RoundTabletop.swift", file: 02-01-RoundTabletop.swift, reset: true)
+            }
+            @Step {
+                이제 `YachtGame.swift`로 이동합니다. `YachtGame`에 `TabletopGame`을 추가합니다. `TableSetup`에 `RoundTabletop`을 등록하면 TabletopKit은 이 entity를 이후 equipment pose와 interaction의 기준이 되는 tabletop으로 인식합니다.
+                @Code(name: "YachtGame.swift", file: 02-02-YachtGame-Tabletop.swift, previousFile: 01-03-YachtGame-Root.swift)
+            }
+            @Step {
+                table을 volume의 바닥 높이에 맞추기 위한 `repositionTable`을 추가합니다.
+                @Code(name: "YachtGame.swift", file: 02-03-YachtGame-Reposition.swift, previousFile: 02-02-YachtGame-Tabletop.swift)
+            }
+            @Step {
+                이제 `ContentView.swift`를 엽니다. `GeometryReader3D`와 update closure를 추가해 volume 크기가 바뀌어도 table 위치를 갱신합니다.
+                @Code(name: "ContentView.swift", file: 02-04-ContentView-Reposition.swift, previousFile: 01-05-ContentView-RealityView.swift)
+            }
+        }
+    }
+
+    @Section(title: "플레이어가 사용할 seat 추가하기") {
+        @ContentAndMedia {
+            TabletopKit interaction은 누가 table을 사용하는지 알기 위해 seat 개념을 사용합니다. 이 샘플은 single-player이므로 하나만 추가합니다.
+        }
+        @Steps {
+            @Step {
+                `PlayerSeat.swift` 파일을 새로 만듭니다. `TableSeat`의 ID와 초기 pose를 정의해 local player가 사용할 위치를 준비합니다.
+                @Code(name: "PlayerSeat.swift", file: 02-05-PlayerSeat.swift, reset: true)
+            }
+            @Step {
+                다시 `YachtGame.swift`로 돌아옵니다. `TableSetup`에 seat를 추가하고 `claimAnySeat()`로 local player가 그 자리를 사용하도록 합니다.
+                @Code(name: "YachtGame.swift", file: 02-06-YachtGame-Seat.swift, previousFile: 02-03-YachtGame-Reposition.swift)
+            }
+        }
+    }
+
+    @Section(title: "실행해서 확인하기") {
+        @ContentAndMedia {
+            volume 바닥에 round table이 보여야 합니다. 아직 dice는 없습니다.
+
+            이제 화면에 보이는 round table은 단순한 RealityKit `Entity`가 아닙니다. `EntityTabletop`으로 TabletopKit의 좌표 기준이 되었고, `TableSetup`과 local seat까지 연결되어 플레이어와 equipment를 받을 수 있는 game board가 되었습니다.
+        }
+        @Steps {
+            @Step {
+                Simulator에서 앱을 실행해 volume 바닥에 round table이 표시되는지 확인합니다.
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            `EntityTabletop`이 RealityKit `Entity`에 추가로 제공하는 것은 무엇인가요?
+            @Choice(isCorrect: true) {
+                TabletopKit에서 사용할 ID와 tabletop shape입니다.
+                @Justification(reaction: "정답입니다.") {
+                    시각적 entity를 논리적 tabletop으로 연결합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                자동 점수 계산 규칙입니다.
+                @Justification(reaction: "아닙니다.") {
+                    점수 규칙은 게임 로직입니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            `TableSetup`의 역할은 무엇인가요?
+            @Choice(isCorrect: true) {
+                게임 시작 시 tabletop, seat, equipment 구성을 정의합니다.
+                @Justification(reaction: "맞아요.") {
+                    초기 game state의 구성표라고 볼 수 있습니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                SwiftUI layout을 배치합니다.
+                @Justification(reaction: "아닙니다.") {
+                    SwiftUI layout과는 별개입니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            single-player 샘플에서 `claimAnySeat()`를 호출하는 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                local player가 등록된 seat를 사용하도록 하기 위해서입니다.
+                @Justification(reaction: "정답입니다.") {
+                    interaction의 player context를 연결합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                table asset을 메모리에 preload하기 위해서입니다.
+                @Justification(reaction: "아닙니다.") {
+                    asset loading과 관련 없습니다.
+                }
+            }
+        }
+    }
+}

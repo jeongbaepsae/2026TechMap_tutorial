@@ -1,9 +1,3 @@
-/*
-See the LICENSE.txt file for this sample’s licensing information.
-
-Abstract:
-An object that represents a D6 used in Yacht Dice.
-*/
 import UIKit
 import RealityKit
 import TabletopKit

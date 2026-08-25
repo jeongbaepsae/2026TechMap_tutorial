@@ -1,10 +1,3 @@
-/*
-See the LICENSE.txt file for this sample’s licensing information.
-
-Abstract:
-An object that represents a D6 used in Yacht Dice.
-*/
-import UIKit
 import RealityKit
 import TabletopKit
 import RealityKitContent
@@ -62,37 +55,5 @@ final class Die: EntityEquipment {
         }
 
         return score
-    }
-
-    func setHeldAppearance(_ isHeld: Bool) {
-        updateMaterials(
-            in: entity,
-            tint: isHeld ? .systemBlue : .white
-        )
-    }
-
-    private func updateMaterials(
-        in entity: Entity,
-        tint: UIColor
-    ) {
-        if var modelComponent = entity.components[ModelComponent.self] {
-            modelComponent.materials = modelComponent.materials.map { material in
-                guard var pbrMaterial = material as? PhysicallyBasedMaterial else {
-                    return material
-                }
-
-                let texture = pbrMaterial.baseColor.texture
-                pbrMaterial.baseColor = PhysicallyBasedMaterial.BaseColor(
-                    tint: tint,
-                    texture: texture
-                )
-                return pbrMaterial
-            }
-            entity.components.set(modelComponent)
-        }
-
-        for child in entity.children {
-            updateMaterials(in: child, tint: tint)
-        }
     }
 }

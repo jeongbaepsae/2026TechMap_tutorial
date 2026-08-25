@@ -14,23 +14,13 @@ struct ContentView: View {
                 game.repositionTable(content: content, proxy: proxy3D)
             }
         }
-        .tabletopGame(game.tabletopGame, parent: game.root) { initialInteractionValue in
-            DiceInteraction(game: game, initialInteractionValue: initialInteractionValue)
-        }
-        .ornament(
-            attachmentAnchor: .scene(.bottomBack),
-            contentAlignment: .bottom
-        ) {
-            YachtScoreSheetView(
-                scoreSheet: game.scoreSheet,
-                previews: game.yachtScorePreviews,
-                canCommitScore: game.canCommitScore,
-                onSelectCategory: { category in
-                    game.commitScore(for: category)
-                },
-                onStartNewGame: {
-                    game.startNewGame()
-                }
+        .tabletopGame(
+            game.tabletopGame,
+            parent: game.root
+        ) { initialInteractionValue in
+            DiceInteraction(
+                game: game,
+                initialInteractionValue: initialInteractionValue
             )
         }
         .ornament(
@@ -45,8 +35,10 @@ struct ContentView: View {
                 rollCount: game.rollCount,
                 maximumRollCount: YachtGame.maximumRollCount,
                 isRolling: game.isRolling,
-                isGameFinished: game.isGameFinished,
-                onTapDie: { game.toggleHold(at: $0) }
+                isGameFinished: false,
+                onTapDie: { index in
+                    game.toggleHold(at: index)
+                }
             )
         }
     }

@@ -1,0 +1,116 @@
+@Tutorial(time: 30) {
+    @Intro(title: "주사위 결과를 읽고 세 번으로 제한하기") {
+        이제 toss의 raw face를 1~6 숫자로 변환하고, 한 턴에 최대 세 번만 굴릴 수 있게 합니다. 화면 아래에는 현재 다섯 결과와 roll 횟수가 표시됩니다.
+    }
+
+    @Section(title: "TabletopKit face를 1~6 값으로 바꾸기") {
+        @ContentAndMedia {
+            toss outcome의 `rawValue`는 곧바로 Yacht 점수가 아닙니다. cube face와 실제 눈 숫자 사이의 mapping을 별도로 정의합니다.
+        }
+        @Steps {
+            @Step {
+                `FaceMappingHelpers.swift` 파일을 새로 만듭니다. cube face `.a ... .f`와 Yacht에서 사용할 1...6 값을 연결합니다.
+                @Code(name: "FaceMappingHelpers.swift", file: 05-01-FaceMappingHelpers.swift, reset: true)
+            }
+            @Step {
+                이제 `Die.swift`를 엽니다. `faceMap`과 `calculateScore(for:)`를 추가합니다. TabletopKit이 돌려주는 cube face 자체와 Yacht에서 사용하는 1~6 숫자를 분리해 두면, 3D orientation을 게임 규칙에서 직접 해석할 필요가 없습니다.
+                @Code(name: "Die.swift", file: 05-02-Die-FaceMap.swift, previousFile: 03-03-Die-FiveLayout.swift)
+            }
+        }
+    }
+
+    @Section(title: "한 턴의 roll state 만들기") {
+        @ContentAndMedia {
+            TabletopKit은 toss 결과를 관리하지만 “한 턴에 세 번”이라는 Yacht 규칙까지 정하지는 않습니다. 이 규칙은 `YachtGame`의 상태로 둡니다.
+        }
+        @Steps {
+            @Step {
+                이제 `YachtGame.swift`로 이동합니다. `lastRollResults`, `rollCount`, `isRolling`과 `finishRoll()`을 추가합니다. snapshot을 읽어 다섯 dice의 현재 face를 저장합니다.
+                @Code(name: "YachtGame.swift", file: 05-03-YachtGame-RollState.swift, previousFile: 03-04-YachtGame-FiveDice.swift)
+            }
+            @Step {
+                이제 `DiceInteraction.swift`로 이동합니다. interaction 시작 시 `canStartRoll`을 검사하고, 정상적인 toss가 끝났을 때만 `finishRoll()`을 호출하도록 바꿉니다.
+                @Code(name: "DiceInteraction.swift", file: 05-04-DiceInteraction-RollState.swift, previousFile: 04-03-DiceInteraction-Five.swift)
+            }
+        }
+    }
+
+    @Section(title: "결과를 화면에서 확인하기") {
+        @ContentAndMedia {
+            3D entity의 상태는 `YachtGame`에 저장하고, SwiftUI는 그 상태를 읽어 UI만 표시합니다.
+        }
+        @Steps {
+            @Step {
+                `DiceResultsView.swift` 파일을 새로 만듭니다. 다섯 결과, 합계, 현재 roll 횟수를 표시합니다.
+                @Code(name: "DiceResultsView.swift", file: 05-05-DiceResultsView.swift, reset: true)
+            }
+            @Step {
+                마지막으로 `ContentView.swift`를 엽니다. 앞쪽 ornament에 결과 view를 연결해 3D table과 같은 volume에서 turn 정보를 확인할 수 있게 합니다.
+                @Code(name: "ContentView.swift", file: 05-06-ContentView-Results.swift, previousFile: 04-01-ContentView-TabletopInteraction.swift)
+            }
+        }
+    }
+
+    @Section(title: "실행해서 확인하기") {
+        @ContentAndMedia {
+            toss할 때마다 1~6 값 다섯 개와 `Roll 1 / 3`, `Roll 2 / 3`, `Roll 3 / 3`이 표시되어야 합니다. 세 번째 이후에는 새로운 toss가 시작되지 않습니다.
+
+            toss가 끝나면 흐름은 `TabletopGame` snapshot → `Die.faceMap` → `YachtGame.lastRollResults` 순서로 이어집니다. 여기에 `rollCount`를 함께 저장함으로써 TabletopKit의 물리 결과를 Yacht의 “한 턴에 최대 세 번” 규칙으로 변환합니다.
+
+            현재는 매 roll마다 다섯 dice가 모두 toss 대상입니다. 다음 단원에서는 Hold 상태를 추가해 이 turn state를 기준으로 다음 toss에 참여할 equipment를 선택합니다.
+        }
+        @Steps {
+            @Step {
+                dice를 세 번 굴려 1~6 결과와 roll 횟수가 갱신되고, 세 번째 이후에는 새 toss가 시작되지 않는지 확인합니다.
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            `FaceMap`이 필요한 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                논리적인 cube face와 게임에서 사용할 숫자 값을 분리하기 위해서입니다.
+                @Justification(reaction: "정답입니다.") {
+                    같은 shape도 다른 face 값 규칙을 가질 수 있습니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                RealityKit texture를 바꾸기 위해서입니다.
+                @Justification(reaction: "아닙니다.") {
+                    material과는 별개입니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            현재 dice 결과를 읽을 때 사용하는 것은 무엇인가요?
+            @Choice(isCorrect: true) {
+                `TabletopGame`의 current snapshot입니다.
+                @Justification(reaction: "맞아요.") {
+                    snapshot에서 각 equipment state를 읽습니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                SwiftUI `GeometryReader3D`의 frame입니다.
+                @Justification(reaction: "아닙니다.") {
+                    frame은 table 위치 조정에 사용합니다.
+                }
+            }
+        }
+        @MultipleChoice {
+            최대 세 번이라는 규칙을 TabletopKit이 아닌 `YachtGame`에 두는 이유는 무엇인가요?
+            @Choice(isCorrect: true) {
+                세 번 제한은 TabletopKit 공통 동작이 아니라 Yacht의 게임 규칙이기 때문입니다.
+                @Justification(reaction: "정답입니다.") {
+                    framework 역할과 game rule을 분리합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                `YachtGame`만 Int를 저장할 수 있기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    타입 제약 때문이 아닙니다.
+                }
+            }
+        }
+    }
+}

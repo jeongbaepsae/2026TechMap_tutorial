@@ -1,40 +1,28 @@
 # Yacht Dice
 
-visionOS에서 `TabletopKit`을 처음 사용하는 개발자를 위한 단계별 Yacht Dice 튜토리얼입니다.
+visionOS에서 `TabletopKit`을 처음 사용하는 개발자를 위한 Yacht Dice 샘플 튜토리얼입니다.
 
 ## Overview
 
-이 튜토리얼은 완성 코드를 한 번에 보여주지 않습니다. 한 단계에서 가능한 한 **한 가지 TabletopKit 개념만 추가**하고, 매 단계마다 화면이나 상태가 어떻게 달라지는지 확인합니다.
+Xcode에서 **visionOS > App** 템플릿을 만들고 Initial Scene을 **Volume**으로 선택한 뒤 시작합니다. 튜토리얼에서 제공하는 `table.usda`와 `D6.usdz`를 `RealityKitContent.rkassets`에 추가하고, `realityKitContentBundle`에서 직접 불러와 TabletopKit의 tabletop과 equipment로 연결합니다.
 
-먼저 다음 세 계층을 구분해서 생각합니다.
+Yacht Dice는 네 가지 역할이 연결되어 동작합니다.
 
-- **SwiftUI**: volumetric window와 점수판 같은 2D 인터페이스를 구성합니다.
-- **RealityKit**: 테이블과 주사위처럼 실제로 보이는 3D `Entity`를 렌더링합니다.
-- **TabletopKit**: 테이블, 좌석, 장비의 논리적 상태와 상호작용을 관리합니다.
+- **SwiftUI**는 volumetric window와 결과·점수표 UI를 구성합니다.
+- **RealityKit**은 `RealityKitContent` package에서 table과 D6 asset을 불러와 실제로 보이는 3D `Entity`를 렌더링합니다.
+- **TabletopKit**은 RealityKit entity에 tabletop, seat, equipment라는 게임 의미를 부여하고 사용자의 조작과 toss를 관리합니다.
+- **Yacht 게임 로직**은 roll 횟수, Hold, 점수 계산처럼 TabletopKit이 알 필요가 없는 규칙을 관리합니다.
 
-완성 과정은 다음 순서로 진행합니다.
+먼저 3D 공간과 tabletop을 만들고, 그 위에 dice를 equipment로 등록합니다. 이후 `TabletopInteraction`으로 dice를 굴리고 snapshot에서 결과를 읽어 Yacht의 turn state와 score sheet로 전달합니다. 이 흐름을 따라가면 **보이는 3D object가 어떻게 TabletopKit의 game equipment가 되고, 그 결과가 다시 앱의 게임 규칙으로 이어지는지** 확인할 수 있습니다.
 
-1. 1m 크기의 volumetric window를 만듭니다.
-2. RealityKit root entity를 준비합니다.
-3. `EntityTabletop`으로 테이블을 정의합니다.
-4. `TableSetup`과 `TabletopGame`을 만듭니다.
-5. 한 명의 `TableSeat`을 추가합니다.
-6. 한 개의 `EntityEquipment` 주사위를 추가합니다.
-7. 주사위를 다섯 개로 늘립니다.
-8. `TabletopInteraction`으로 주사위를 던집니다.
-9. snapshot에서 결과를 읽고 한 턴을 세 번으로 제한합니다.
-10. 주사위를 Hold해서 다음 toss에서 제외합니다.
-11. Yacht 점수표와 Numbers 보너스를 완성합니다.
-
-> Note: TabletopKit의 장비 구성, face mapping, toss interaction의 초기 접근은 Apple의 *Simulating dice rolls as a component for your game* 샘플을 참고했습니다. Yacht 규칙, Hold 상태, 점수 계산, 보너스, 게임 상태와 UI는 이 튜토리얼에서 단계적으로 별도 구현합니다.
+> Note: TabletopKit의 equipment 구성과 toss interaction의 초기 접근은 Apple의 *Simulating dice rolls as a component for your game* 샘플을 참고했습니다. Yacht 규칙, Hold, 점수 계산, 점수표와 game state는 이 프로젝트에서 별도로 구성했습니다.
 
 ## Topics
 
-### Start Here
+### Tutorial
 
-- <doc:Understanding-TabletopKit>
 - <doc:Yacht-Dice-with-TabletopKit>
 
-### Publishing
+### Reference
 
-- <doc:Publishing-DocC-to-GitHub-Pages>
+- <doc:Attribution>

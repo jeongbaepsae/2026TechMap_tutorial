@@ -12,7 +12,6 @@ final class YachtGame {
 
     private let scoreCalculator = YachtScoreCalculator()
 
-    private(set) var scoreSheet = YachtScoreSheet()
     private(set) var lastRollResults: [Int] = []
     private(set) var heldDieIDs: Set<EquipmentIdentifier> = []
     private(set) var rollCount = 0
@@ -43,25 +42,8 @@ final class YachtGame {
     var hasRolled: Bool { lastRollResults.count == dice.count }
     var rollableDice: [Die] { dice.filter { !heldDieIDs.contains($0.id) } }
     var heldDieIndices: Set<Int> { Set(dice.indices.filter { heldDieIDs.contains(dice[$0].id) }) }
-    var isGameFinished: Bool { scoreSheet.isComplete }
-
-    var canStartRoll: Bool {
-        !isRolling &&
-        !isGameFinished &&
-        rollCount < Self.maximumRollCount &&
-        !rollableDice.isEmpty
-    }
-
-    var canToggleHold: Bool {
-        hasRolled &&
-        !isRolling &&
-        !isGameFinished &&
-        rollCount < Self.maximumRollCount
-    }
-
-    var canCommitScore: Bool {
-        hasRolled && !isRolling && !isGameFinished
-    }
+    var canStartRoll: Bool { !isRolling && rollCount < Self.maximumRollCount && !rollableDice.isEmpty }
+    var canToggleHold: Bool { hasRolled && !isRolling && rollCount < Self.maximumRollCount }
 
     var yachtScorePreviews: [YachtCategory: Int] {
         guard hasRolled else { return [:] }
@@ -77,35 +59,6 @@ final class YachtGame {
         if shouldHold { heldDieIDs.insert(die.id) }
         else { heldDieIDs.remove(die.id) }
         die.setHeldAppearance(shouldHold)
-    }
-
-    @discardableResult
-    func commitScore(for category: YachtCategory) -> Bool {
-        guard canCommitScore else { return false }
-
-        let score = scoreCalculator.score(
-            dice: lastRollResults,
-            category: category
-        )
-
-        guard scoreSheet.record(
-            category: category,
-            score: score,
-            dice: lastRollResults
-        ) else { return false }
-
-        if isGameFinished {
-            clearHeldDice()
-        } else {
-            resetTurnState()
-        }
-        return true
-    }
-
-    func startNewGame() {
-        guard !isRolling else { return }
-        scoreSheet.reset()
-        resetTurnState()
     }
 
     func repositionTable(content: RealityViewContent, proxy: GeometryProxy3D) {
@@ -126,17 +79,5 @@ final class YachtGame {
         updateDiceResults()
         rollCount += 1
         isRolling = false
-    }
-
-    private func resetTurnState() {
-        rollCount = 0
-        clearHeldDice()
-        isRolling = false
-        lastRollResults = []
-    }
-
-    private func clearHeldDice() {
-        for die in dice { die.setHeldAppearance(false) }
-        heldDieIDs.removeAll()
     }
 }

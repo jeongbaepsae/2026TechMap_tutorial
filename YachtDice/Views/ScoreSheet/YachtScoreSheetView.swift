@@ -17,22 +17,10 @@ struct YachtScoreSheetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Yacht Score Sheet")
-                .font(.headline)
+            header
 
             HStack(alignment: .top, spacing: 20) {
-                VStack(alignment: .leading, spacing: 12) {
-                    YachtScoreSectionView(
-                        title: "Numbers",
-                        categories: upperCategories,
-                        scoreSheet: scoreSheet,
-                        previews: previews,
-                        canCommitScore: canCommitScore,
-                        onSelectCategory: onSelectCategory
-                    )
-
-                    NumbersBonusView(scoreSheet: scoreSheet)
-                }
+                numbersSection
 
                 Divider()
 
@@ -44,30 +32,111 @@ struct YachtScoreSheetView: View {
                     canCommitScore: canCommitScore,
                     onSelectCategory: onSelectCategory
                 )
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
 
             Divider()
 
-            HStack {
-                Text("Total Score")
-                Spacer()
-                Text("\(scoreSheet.totalScore)")
-                    .fontWeight(.bold)
-            }
+            totalSection
 
             if scoreSheet.isComplete {
-                VStack(spacing: 10) {
-                    Text("Game Complete")
-                        .font(.headline)
-                    Text("Final Score: \(scoreSheet.totalScore)")
-                        .fontWeight(.bold)
-                    Button("Start New Game", action: onStartNewGame)
-                }
-                .frame(maxWidth: .infinity)
+                gameFinishedSection
             }
         }
         .padding(20)
         .frame(width: 680)
         .glassBackgroundEffect()
+    }
+
+    private var header: some View {
+        HStack {
+            Text("Yacht Score Sheet")
+                .font(.headline)
+
+            Spacer()
+
+            Text("\(scoreSheet.entries.count) / \(YachtCategory.allCases.count)")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var numbersSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            YachtScoreSectionView(
+                title: "Numbers",
+                categories: upperCategories,
+                scoreSheet: scoreSheet,
+                previews: previews,
+                canCommitScore: canCommitScore,
+                onSelectCategory: onSelectCategory
+            )
+
+            NumbersBonusView(scoreSheet: scoreSheet)
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private var totalSection: some View {
+        VStack(spacing: 8) {
+            if scoreSheet.numbersBonusScore > 0 {
+                HStack {
+                    Label(
+                        "Numbers Bonus",
+                        systemImage: "sparkles"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Text("+\(scoreSheet.numbersBonusScore)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.accentColor)
+                        .monospacedDigit()
+                }
+            }
+
+            HStack {
+                Text("Total Score")
+                    .font(.headline)
+
+                Spacer()
+
+                Text("\(scoreSheet.totalScore)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .monospacedDigit()
+            }
+        }
+    }
+
+    private var gameFinishedSection: some View {
+        VStack(spacing: 12) {
+            Label(
+                "Game Complete",
+                systemImage: "flag.checkered"
+            )
+            .font(.headline)
+
+            Text("Final Score: \(scoreSheet.totalScore)")
+                .font(.title3)
+                .fontWeight(.bold)
+                .monospacedDigit()
+
+            Button {
+                onStartNewGame()
+            } label: {
+                Label(
+                    "Start New Game",
+                    systemImage: "arrow.counterclockwise"
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 4)
     }
 }

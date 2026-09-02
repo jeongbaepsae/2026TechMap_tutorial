@@ -2,7 +2,7 @@
 See the LICENSE.txt file for this sample’s licensing information.
 
 Abstract:
-An object that represents a D6 used in Yacht Dice.
+An object that represents a die and functions for different dice types.
 */
 import UIKit
 import RealityKit
@@ -11,9 +11,8 @@ import RealityKitContent
 internal import Spatial
 
 extension EquipmentIdentifier {
-    static func diceID(_ index: Int) -> Self {
-        .init(1000 + index)
-    }
+    static var tableID: Self { .init(0) }
+    static func diceID(_ index: Int) -> Self { .init(1000 + index) }
 }
 
 final class Die: EntityEquipment {
@@ -25,10 +24,12 @@ final class Die: EntityEquipment {
     let faceType: any TossableRepresentation.TossableFace.Type
     let faceMap: any TossableFaceMap
 
-    init(index: Int) {
-        let representation = TossableRepresentation.cube(height: 0.02)
-        let initialFace = representation.face(for: .identity)
-
+    init(
+        index: Int,
+        entityName: String,
+        representation: TossableRepresentation,
+        faceMap: any TossableFaceMap
+    ) {
         let spacing: Double = 0.06
         let startX: Double = -0.15
         let initialPose = TableVisualState.Pose2D(
@@ -38,11 +39,14 @@ final class Die: EntityEquipment {
             ),
             rotation: .zero
         )
+        let initialFace = representation.face(for: .identity)
 
         entity = try! ModelEntity.load(
-            named: "dice/D6",
+            named: entityName,
             in: realityKitContentBundle
         )
+        addShadowRecursive(entity: entity)
+
         id = .diceID(index)
         initialState = .init(
             rawValue: initialFace.rawValue,
@@ -52,13 +56,24 @@ final class Die: EntityEquipment {
         )
         tossableRepresentation = representation
         faceType = type(of: initialFace)
-        faceMap = cubeFaceMap
+        self.faceMap = faceMap
+    }
+
+    func restingOrientation(state: RawValueState) -> Rotation3D {
+        guard let currentFace = faceType.init(rawValue: state.rawValue) else {
+            fatalError("The rawValue in the state was set with an invalid value.")
+        }
+
+        return currentFace.restingOrientation
     }
 
     func calculateScore(for state: RawValueState) -> Int {
-        guard let currentFace = faceType.init(rawValue: state.rawValue),
-              let score = faceMap.value(for: currentFace) else {
-            fatalError("Unable to read the die face")
+        guard let currentFace = faceType.init(rawValue: state.rawValue) else {
+            fatalError("The rawValue in the state was set with an invalid value")
+        }
+
+        guard let score = faceMap.value(for: currentFace) else {
+            fatalError("The wrong face map was used when initializing this die")
         }
 
         return score
@@ -86,8 +101,10 @@ final class Die: EntityEquipment {
                     tint: tint,
                     texture: texture
                 )
+
                 return pbrMaterial
             }
+
             entity.components.set(modelComponent)
         }
 
@@ -95,4 +112,13 @@ final class Die: EntityEquipment {
             updateMaterials(in: child, tint: tint)
         }
     }
+}
+
+func cubeDie(index: Int, height: Float = 0.02) -> Die {
+    Die(
+        index: index,
+        entityName: "dice/D6",
+        representation: TossableRepresentation.cube(height: height),
+        faceMap: cubeFaceMap
+    )
 }

@@ -9,13 +9,32 @@
         }
         @Steps {
             @Step {
-                Xcode에서 **File > New > Project**를 선택하고 **visionOS > App** 템플릿을 선택합니다.
+                Xcode에서 **File > New > Project**를 선택하여 새로운 프로젝트를 시작합니다.
+                @Image(
+                    source: "1_Section 1_Step 1.png",
+                    alt: "Xcode 시작 화면에서 Create New Project 버튼이 강조되어 있습니다."
+                )
+            }
+            @Step {
+                다음으로 나타나는 화면에서 **visionOS > App** 템플릿을 선택합니다.
+                @Image(
+                    source: "1_Section 1_Step 2.png",
+                    alt: "Xcode template 선택 화면에서 visionOS와 App 버튼이 강조되어 있습니다."
+                )
             }
             @Step {
                 Product Name을 `YachtDice`로 지정하고 Initial Scene은 **Volume**을 선택합니다. 이 튜토리얼에서는 별도의 Immersive Space를 사용하지 않습니다.
+                @Image(
+                    source: "1_Section 1_Step 3.png",
+                    alt: "Xcode 프로젝트 설정 화면에서 Product Name에 YachtDice, Initial Scene에 Volume, Immersive Space Renderer에 Node이 설정된 채로 강조되어 있습니다."
+                )
             }
             @Step {
                 Reality Composer Pro content를 포함해 프로젝트를 생성합니다. Project Navigator에서 `YachtDiceApp.swift`, `ContentView.swift`, `Packages/RealityKitContent`가 만들어졌는지 확인합니다.
+                @Image(
+                    source: "1_Section 1_Step 4.png",
+                    alt: "Xcode Navigator에 ContentView.swift, YachtDiceApp.swift, RealityKitContent 파일이 강조되어 있습니다."
+                )
             }
         }
     }
@@ -29,12 +48,31 @@
         @Steps {
             @Step {
                 `Packages/RealityKitContent/Package.realitycomposerpro`를 열어 Reality Composer Pro에서 content package를 확인합니다.
+                @Image(
+                    source: "1_Section 2_Step 1.png",
+                    alt: "Xcode Navigator에서 RealityKitContent/Package.realitycomposerpro 파일이 강조되어 있습니다."
+                )
             }
             @Step {
-                `YachtDice-TutorialResources.zip`을 내려받고 압축을 풉니다. 안에 있는 `dice`와 `table` 폴더를 새 프로젝트의 `RealityKitContent.rkassets` 안으로 복사합니다. `table.usda`가 texture를 상대 경로로 참조하므로 `table` 폴더 전체를 그대로 옮깁니다.
+                이 페이지의 상단에서 `YachtDice-TutorialResources.zip`을 내려받고 압축을 풉니다.
+                @Image(
+                    source: "1_Section 2_Step 2.png",
+                    alt: "이 웹페이지의 최상단 이미지입니다. Project files 버튼이 강조되어 있습니다."
+                )
+            }
+            @Step {
+                압축을 푼 파일 안에 있는 `dice`와 `table` 폴더를 새 프로젝트의 `RealityKitContent.rkassets` 안으로 복사합니다. `table.usda`가 texture를 상대 경로로 참조하므로 `table` 폴더 전체를 그대로 옮깁니다.
+                @Image(
+                    source: "1_Section 2_Step 3.png",
+                    alt: "Xcode Navigator에서 RealityKitContent.rkassets 폴더 안에 있는 dice, table 폴더가 강조되어 있습니다."
+                )
             }
             @Step {
                 Project Navigator에서 최종 경로가 `RealityKitContent.rkassets/table/table.usda`와 `RealityKitContent.rkassets/dice/D6.usdz`인지 확인합니다. 이후 코드는 각각 `"table/table"`, `"dice/D6"`라는 이름으로 asset을 로드합니다.
+                @Image(
+                    source: "1_Section 2_Step 4.png",
+                    alt: "Xcode Navigator에서 각각 dice, table 폴더 안에 들어 있는 D6.usdz, table.usda가 강조되어 있습니다."
+                )
             }
         }
     }
@@ -54,7 +92,14 @@
             }
             @Step {
                 이제 템플릿이 만든 `ContentView.swift`를 확인합니다. 기본 `RealityView`는 `RealityKitContent` package의 `Scene` entity를 불러와 volume 안에 추가합니다. 이후에는 이 demo scene 대신 Yacht Dice가 관리하는 root entity를 연결합니다.
-                @Code(name: "ContentView.swift", file: 01-00-ContentView-Template.swift, reset: true)
+                @Code(
+                      name: "ContentView.swift", file: 01-00-ContentView-Template.swift, reset: true
+                      ) {
+                            @Image(
+                                source: "1_Section 3_Step 3.png",
+                                alt: "Enlage RealityView Content 버튼 보이는 ContentView의 Preview 이미지입니다."
+                            )
+                        }
             }
         }
     }
@@ -88,6 +133,10 @@
         @Steps {
             @Step {
                 Simulator에서 volume이 정상적으로 열리고 오류 없이 빈 공간이 표시되는지 확인합니다.
+                @Image(
+                    source: "1_Section 5_Step 1.png",
+                    alt: "다른 게 보이지 않는 Simulator 화면입니다."
+                )
             }
         }
     }

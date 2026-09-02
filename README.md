@@ -12,7 +12,7 @@ The Documentation Catalog is located at:
 YachtDice/YachtDice.docc/
 ```
 
-The tutorial collection contains eight lessons:
+The tutorial collection contains nine lessons:
 
 1. Create a volumetric Tabletop app
 2. Build a TabletopKit tabletop
@@ -21,7 +21,8 @@ The tutorial collection contains eight lessons:
 5. Read dice results and limit a turn to three rolls
 6. Hold dice and exclude them from the next toss
 7. Calculate Yacht scores with pure Swift
-8. Record scores, calculate the Numbers bonus, and finish the UI with ornaments
+8. Record scores and assemble the score sheet UI
+9. Calculate the Numbers bonus and finish the game UI with ornaments
 
 In Xcode, choose **Product > Build Documentation** to open the tutorials in the Developer Documentation window.
 

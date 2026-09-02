@@ -29,6 +29,10 @@
         }
         @Steps {
             @Step {
+                `DieFaceSymbol.swift` 파일을 새로 만듭니다. 기록된 dice 결과를 SF Symbols의 주사위 눈으로 표시할 수 있도록 단일 symbol과 다섯 개 결과 view를 정의합니다.
+                @Code(name: "DieFaceSymbol.swift", file: 08-04-DieFaceSymbol.swift, reset: true)
+            }
+            @Step {
                 `YachtScoreRow.swift` 파일을 새로 만듭니다. 한 category의 이름, 기록된 점수, 아직 확정하지 않은 preview를 한 row에서 표현합니다.
                 @Code(name: "YachtScoreRow.swift", file: 08-04-YachtScoreRow.swift, reset: true)
             }

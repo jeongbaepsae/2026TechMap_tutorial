@@ -1,4 +1,5 @@
 import TabletopKit
+internal import Spatial
 
 struct PlayerSeat: TableSeat {
     let id: TableSeatIdentifier

@@ -13,12 +13,13 @@ final class DiceInteraction: TabletopInteraction.Delegate {
         initialInteractionValue: TabletopInteraction.Value
     ) {
         self.game = game
-        controlledDie = game.tabletopGame.equipment(
+        let selectedDie = game.tabletopGame.equipment(
             of: Die.self,
             matching: initialInteractionValue.controlledEquipmentID
         )!
+        controlledDie = selectedDie
         extraDiceToToss = game.rollableDice.filter { die in
-            die.id != controlledDie.id
+            die.id != selectedDie.id
         }
     }
 

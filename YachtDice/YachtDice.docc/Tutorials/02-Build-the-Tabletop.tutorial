@@ -40,6 +40,10 @@
                 다시 `YachtGame.swift`로 돌아옵니다. `TableSetup`에 seat를 추가하고 `claimAnySeat()`로 local player가 그 자리를 사용하도록 합니다.
                 @Code(name: "YachtGame.swift", file: 02-06-YachtGame-Seat.swift, previousFile: 02-03-YachtGame-Reposition.swift)
             }
+            @Step {
+                이제 `ContentView.swift`로 돌아갑니다. 지금까지 만든 `TabletopGame`은 tabletop과 seat의 상태를 가지고 있지만, 아직 RealityKit scene과 연결되어 있지 않습니다. `.tabletopGame(_:parent:)`를 사용해 TabletopKit이 관리하는 entity들을 `game.root` 아래에 배치합니다.
+                @Code(name: "ContentView.swift", file: 02-07-ContentView.swift, previousFile: 02-04-ContentView-Reposition.swift)
+            }
         }
     }
 

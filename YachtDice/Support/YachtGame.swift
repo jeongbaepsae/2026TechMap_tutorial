@@ -1,3 +1,9 @@
+/*
+See the LICENSE.txt file for this sample’s licensing information.
+
+Abstract:
+A container that coordinates the tabletop, turn state, and Yacht scoring.
+*/
 import SwiftUI
 import RealityKit
 import TabletopKit
@@ -6,8 +12,8 @@ import TabletopKit
 final class YachtGame {
     static let maximumRollCount = 3
 
-    let root = Entity()
     let tabletopGame: TabletopGame
+    let root = Entity()
     let dice: [Die]
 
     private let scoreCalculator = YachtScoreCalculator()
@@ -16,13 +22,15 @@ final class YachtGame {
     private(set) var lastRollResults: [Int] = []
     private(set) var heldDieIDs: Set<EquipmentIdentifier> = []
     private(set) var rollCount = 0
+
     var isRolling = false
 
     @MainActor
     init() {
         root.name = "Yacht game root"
+
         let tabletop = RoundTabletop()
-        let createdDice = (1...5).map { Die(index: $0) }
+        let createdDice = (1...5).map { cubeDie(index: $0) }
         dice = createdDice
 
         var setup = TableSetup(tabletop: tabletop)
@@ -33,17 +41,34 @@ final class YachtGame {
                 rotation: .init(degrees: 0)
             )
         )
-        for die in createdDice { setup.add(equipment: die) }
+
+        for die in createdDice {
+            setup.add(equipment: die)
+        }
 
         tabletopGame = TabletopGame(tableSetup: setup)
         tabletopGame.claimAnySeat()
     }
 
-    var lastRollScore: Int { lastRollResults.reduce(0, +) }
-    var hasRolled: Bool { lastRollResults.count == dice.count }
-    var rollableDice: [Die] { dice.filter { !heldDieIDs.contains($0.id) } }
-    var heldDieIndices: Set<Int> { Set(dice.indices.filter { heldDieIDs.contains(dice[$0].id) }) }
-    var isGameFinished: Bool { scoreSheet.isComplete }
+    var lastRollScore: Int {
+        lastRollResults.reduce(0, +)
+    }
+
+    var hasRolled: Bool {
+        lastRollResults.count == dice.count
+    }
+
+    var rollableDice: [Die] {
+        dice.filter { !heldDieIDs.contains($0.id) }
+    }
+
+    var heldDieIndices: Set<Int> {
+        Set(
+            dice.indices.filter { index in
+                heldDieIDs.contains(dice[index].id)
+            }
+        )
+    }
 
     var canStartRoll: Bool {
         !isRolling &&
@@ -60,57 +85,60 @@ final class YachtGame {
     }
 
     var canCommitScore: Bool {
-        hasRolled && !isRolling && !isGameFinished
+        hasRolled &&
+        !isRolling &&
+        !isGameFinished
     }
 
     var yachtScorePreviews: [YachtCategory: Int] {
-        guard hasRolled else { return [:] }
+        guard hasRolled else {
+            return [:]
+        }
+
         return scoreCalculator.scores(for: lastRollResults)
     }
 
-    func isHeld(_ die: Die) -> Bool { heldDieIDs.contains(die.id) }
+    var isGameFinished: Bool {
+        scoreSheet.isComplete
+    }
+
+    func isHeld(_ die: Die) -> Bool {
+        heldDieIDs.contains(die.id)
+    }
 
     func toggleHold(at index: Int) {
-        guard canToggleHold, dice.indices.contains(index) else { return }
+        guard canToggleHold,
+              dice.indices.contains(index) else {
+            return
+        }
+
         let die = dice[index]
         let shouldHold = !isHeld(die)
-        if shouldHold { heldDieIDs.insert(die.id) }
-        else { heldDieIDs.remove(die.id) }
+
+        if shouldHold {
+            heldDieIDs.insert(die.id)
+        } else {
+            heldDieIDs.remove(die.id)
+        }
+
         die.setHeldAppearance(shouldHold)
     }
 
-    @discardableResult
-    func commitScore(for category: YachtCategory) -> Bool {
-        guard canCommitScore else { return false }
-
-        let score = scoreCalculator.score(
-            dice: lastRollResults,
-            category: category
+    func repositionTable(
+        content: RealityViewContent,
+        proxy: GeometryProxy3D
+    ) {
+        let frame = content.convert(
+            proxy.frame(in: .global),
+            from: .global,
+            to: .scene
         )
 
-        guard scoreSheet.record(
-            category: category,
-            score: score,
-            dice: lastRollResults
-        ) else { return false }
-
-        if isGameFinished {
-            clearHeldDice()
-        } else {
-            resetTurnState()
-        }
-        return true
-    }
-
-    func startNewGame() {
-        guard !isRolling else { return }
-        scoreSheet.reset()
-        resetTurnState()
-    }
-
-    func repositionTable(content: RealityViewContent, proxy: GeometryProxy3D) {
-        let frame = content.convert(proxy.frame(in: .global), from: .global, to: .scene)
-        root.transform.translation = .init(x: 0, y: frame.min.y, z: 0)
+        root.transform.translation = .init(
+            x: 0,
+            y: frame.min.y,
+            z: 0
+        )
     }
 
     func updateDiceResults() {
@@ -122,10 +150,51 @@ final class YachtGame {
     }
 
     func finishRoll() {
-        guard rollCount < Self.maximumRollCount else { isRolling = false; return }
+        guard rollCount < Self.maximumRollCount else {
+            isRolling = false
+            return
+        }
+
         updateDiceResults()
         rollCount += 1
         isRolling = false
+    }
+
+    func startNewGame() {
+        guard !isRolling else {
+            return
+        }
+
+        scoreSheet.reset()
+        resetTurnState()
+    }
+
+    @discardableResult
+    func commitScore(for category: YachtCategory) -> Bool {
+        guard canCommitScore else {
+            return false
+        }
+
+        let score = scoreCalculator.score(
+            dice: lastRollResults,
+            category: category
+        )
+
+        guard scoreSheet.record(
+            category: category,
+            score: score,
+            dice: lastRollResults
+        ) else {
+            return false
+        }
+
+        if isGameFinished {
+            clearHeldDice()
+        } else {
+            resetTurnState()
+        }
+
+        return true
     }
 
     private func resetTurnState() {
@@ -136,7 +205,10 @@ final class YachtGame {
     }
 
     private func clearHeldDice() {
-        for die in dice { die.setHeldAppearance(false) }
+        for die in dice {
+            die.setHeldAppearance(false)
+        }
+
         heldDieIDs.removeAll()
     }
 }

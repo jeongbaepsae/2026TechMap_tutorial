@@ -1,9 +1,12 @@
+import Spatial
 import TabletopKit
 internal import Spatial
 
 struct PlayerSeat: TableSeat {
+    typealias State = TableSeatState
+
     let id: TableSeatIdentifier
-    let initialState: TableSeatState
+    let initialState: State
 
     init(
         index: Int,

@@ -9,7 +9,7 @@
         }
         @Steps {
             @Step {
-                `Die.swift` 파일을 새로 만듭니다. `ModelEntity.load(named:in:)`로 `"dice/D6"`를 `realityKitContentBundle`에서 불러온 뒤, ID, 초기 pose, cube toss representation을 한 타입에 묶습니다.
+                `Die.swift` 파일을 새로 만듭니다. `ModelEntity.load(named:in:)`로 `"dice/D6"`를 `realityKitContentBundle`에서 불러온 뒤, ID, 초기 pose, cube toss representation을 한 타입에 묶습니다. TabletopKit의 2D pose가 Spatial 타입을 사용하므로 이 파일에서도 `internal import Spatial`을 함께 사용합니다.
                 @Code(name: "Die.swift", file: 03-01-Die-One.swift, reset: true)
             }
             @Step {
@@ -52,45 +52,63 @@
         @MultipleChoice {
             `EntityEquipment`의 `entity`는 무엇을 담당하나요?
             @Choice(isCorrect: true) {
-                화면에 보이는 RealityKit object를 제공합니다.
+                equipment에 대응해 화면에 표시할 RealityKit object를 제공합니다.
                 @Justification(reaction: "정답입니다.") {
-                    TabletopKit state와 시각적 entity를 연결합니다.
+                    TabletopKit의 논리적 equipment state와 실제로 보이는 RealityKit entity를 연결합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                roll 횟수를 저장합니다.
+                equipment의 현재 face 값과 pose만 저장하고 시각적인 model은 포함하지 않습니다.
                 @Justification(reaction: "아닙니다.") {
-                    roll 횟수는 game state입니다.
+                    face 값과 pose는 state가 담당하고 `entity`는 시각적 object입니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                같은 종류의 dice가 공유할 `EquipmentIdentifier`를 생성합니다.
+                @Justification(reaction: "아닙니다.") {
+                    각 equipment의 `id`는 별도 속성이며 서로 고유해야 합니다.
                 }
             }
         }
         @MultipleChoice {
-            D6 model이 cube 모양이어도 `TossableRepresentation.cube`를 지정하는 이유는 무엇인가요?
+            D6 model이 이미 cube 모양이어도 `TossableRepresentation.cube`를 지정하는 이유는 무엇인가요?
+            @Choice(isCorrect: false) {
+                RealityKit mesh를 cube 형태로 다시 모델링하고 texture UV를 재생성하기 위해서입니다.
+                @Justification(reaction: "아닙니다.") {
+                    시각적 mesh와 texture를 변경하는 API가 아닙니다.
+                }
+            }
             @Choice(isCorrect: true) {
-                TabletopKit toss simulation에 논리적인 toss 형태를 알려 주기 위해서입니다.
+                TabletopKit의 toss simulation이 사용할 논리적인 형태와 face 구조를 알려 주기 위해서입니다.
                 @Justification(reaction: "맞아요.") {
-                    visual mesh와 toss representation은 별개입니다.
+                    visual mesh와 toss representation은 역할이 분리되어 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                texture를 불러오기 위해서입니다.
+                `EntityEquipment`가 `ModelEntity`를 로드할 수 있도록 bundle 경로를 지정하기 위해서입니다.
                 @Justification(reaction: "아닙니다.") {
-                    texture loading과는 관계없습니다.
+                    asset 경로는 `ModelEntity.load`의 `named:`와 bundle에서 지정합니다.
                 }
             }
         }
         @MultipleChoice {
-            다섯 dice가 같은 ID를 사용하면 어떤 문제가 생기나요?
-            @Choice(isCorrect: true) {
-                TabletopKit이 각 equipment를 독립적으로 구분할 수 없습니다.
-                @Justification(reaction: "정답입니다.") {
-                    interaction과 snapshot도 ID를 기준으로 장비를 찾습니다.
+            다섯 dice가 같은 `EquipmentIdentifier`를 사용하면 어떤 문제가 생기나요?
+            @Choice(isCorrect: false) {
+                다섯 model이 자동으로 하나의 material을 공유하게 됩니다.
+                @Justification(reaction: "아닙니다.") {
+                    material 공유 여부는 equipment ID와 관계없습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                SwiftUI window 크기만 바뀝니다.
+                initial pose를 다르게 지정해도 모든 dice의 위치가 항상 같아집니다.
                 @Justification(reaction: "아닙니다.") {
-                    window와 무관합니다.
+                    핵심 문제는 pose 자체보다 TabletopKit이 장비의 identity를 구분하지 못하는 데 있습니다.
+                }
+            }
+            @Choice(isCorrect: true) {
+                TabletopKit이 interaction과 snapshot에서 각 equipment를 독립적으로 식별할 수 없습니다.
+                @Justification(reaction: "정답입니다.") {
+                    equipment 검색과 상태 갱신이 ID를 기준으로 이루어지므로 각 die에는 고유 ID가 필요합니다.
                 }
             }
         }

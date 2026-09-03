@@ -144,31 +144,43 @@
     @Assessments {
         @MultipleChoice {
             Initial Scene을 Volume으로 선택하는 이유는 무엇인가요?
+            @Choice(isCorrect: false) {
+                `RealityKitContent` package의 USDZ asset은 Volume에서만 로드할 수 있기 때문입니다.
+                @Justification(reaction: "다시 생각해보세요.") {
+                    RealityKit asset을 사용하는 것 자체가 Volume에만 제한되지는 않습니다.
+                }
+            }
             @Choice(isCorrect: true) {
                 table과 dice를 깊이 방향으로 배치할 3D 공간이 필요하기 때문입니다.
                 @Justification(reaction: "정답입니다.") {
-                    Yacht Dice의 RealityKit content는 volumetric window 안에 배치됩니다.
+                    Yacht Dice의 RealityKit content는 volumetric window 안에 실제 깊이를 가진 좌표로 배치됩니다.
                 }
             }
             @Choice(isCorrect: false) {
-                TabletopKit은 Immersive Space에서만 사용할 수 있기 때문입니다.
+                TabletopKit이 항상 1m³ 크기의 scene을 요구하기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    이 샘플은 Immersive Space 없이 volume에서 TabletopKit을 사용합니다.
+                    1m³는 이 튜토리얼에서 정한 초기 volume 크기이며 TabletopKit의 고정 요구사항은 아닙니다.
                 }
             }
         }
         @MultipleChoice {
             `YachtGame.root`의 역할은 무엇인가요?
-            @Choice(isCorrect: true) {
-                게임의 3D content를 한 RealityKit entity hierarchy 아래에서 관리합니다.
-                @Justification(reaction: "맞아요.") {
-                    이후 table과 dice가 이 root를 기준으로 같은 장면에 연결됩니다.
+            @Choice(isCorrect: false) {
+                `TableSetup`의 tabletop, seat, equipment 상태를 저장하는 snapshot입니다.
+                @Justification(reaction: "아닙니다.") {
+                    TabletopKit의 상태는 `TabletopGame`과 snapshot이 관리하고, `root`는 RealityKit entity입니다.
                 }
             }
             @Choice(isCorrect: false) {
-                Yacht 점수를 계산합니다.
+                사용자의 gesture를 `TabletopInteraction`으로 변환하는 delegate입니다.
                 @Justification(reaction: "아닙니다.") {
-                    점수 계산은 별도의 게임 로직이 담당합니다.
+                    gesture와 interaction의 연결은 이후 `.tabletopGame` modifier와 `DiceInteraction`이 담당합니다.
+                }
+            }
+            @Choice(isCorrect: true) {
+                게임의 3D content를 한 RealityKit entity hierarchy 아래에서 관리하는 공통 부모입니다.
+                @Justification(reaction: "맞아요.") {
+                    이후 table과 dice가 이 root를 기준으로 같은 RealityKit scene에 연결됩니다.
                 }
             }
         }
@@ -177,13 +189,19 @@
             @Choice(isCorrect: true) {
                 `realityKitContentBundle`에서 `dice/D6` asset을 이름으로 직접 로드하기 때문입니다.
                 @Justification(reaction: "정답입니다.") {
-                    `RealityKitContent.rkassets` 안의 asset은 package resource로 직접 불러올 수 있습니다.
+                    `RealityKitContent.rkassets`의 asset은 package resource에서 직접 불러올 수 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                TabletopKit이 실행 중에 D6 모델을 자동으로 생성하기 때문입니다.
+                `TossableRepresentation.cube`가 시각적인 D6 mesh까지 자동으로 만들어 주기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    시각적인 D6 모델은 RealityKit asset에서 로드합니다.
+                    `TossableRepresentation`은 toss simulation을 위한 논리적 형태이고, 시각적인 mesh는 별도로 로드합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                visionOS가 `die.face.*` SF Symbol을 자동으로 3D 모델로 변환하기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    SF Symbol은 이후 UI에서 사용할 수 있지만 3D D6 model을 대신하지 않습니다.
                 }
             }
         }

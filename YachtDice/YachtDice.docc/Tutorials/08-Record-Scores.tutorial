@@ -68,47 +68,65 @@
 
     @Assessments {
         @MultipleChoice {
-            preview와 recorded score를 분리하는 이유는 무엇인가요?
-            @Choice(isCorrect: true) {
-                preview는 현재 roll에 따라 바뀌지만 기록된 점수는 이후에도 유지되어야 하기 때문입니다.
-                @Justification(reaction: "정답입니다.") {
-                    lifecycle이 다른 데이터를 분리합니다.
+            preview score와 recorded score를 분리하는 이유는 무엇인가요?
+            @Choice(isCorrect: false) {
+                `TabletopGame` snapshot은 한 번 읽으면 다시 사용할 수 없기 때문에 두 개의 score model이 필요합니다.
+                @Justification(reaction: "아닙니다.") {
+                    snapshot의 제약 때문이 아니라 두 데이터의 생명주기가 다르기 때문입니다.
                 }
             }
             @Choice(isCorrect: false) {
-                SwiftUI에서는 dictionary를 표시할 수 없기 때문입니다.
+                SwiftUI에서는 아직 기록하지 않은 값과 기록된 값을 같은 View에서 표시할 수 없기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    그런 제한은 없습니다.
+                    UI 기술적 제한이 아니라 game state의 의미를 분리하는 설계입니다.
+                }
+            }
+            @Choice(isCorrect: true) {
+                preview는 현재 roll에 따라 계속 바뀌지만, 한 번 기록한 category의 score는 이후 turn에도 유지되어야 하기 때문입니다.
+                @Justification(reaction: "정답입니다.") {
+                    임시 계산 결과와 확정된 게임 기록을 서로 다른 상태로 관리합니다.
                 }
             }
         }
         @MultipleChoice {
-            같은 category를 두 번 기록하지 못하게 막는 곳은 어디인가요?
+            같은 category를 두 번 기록하는 것을 최종적으로 막아야 하는 곳은 어디인가요?
             @Choice(isCorrect: true) {
-                `YachtScoreSheet.record`입니다.
+                `YachtScoreSheet.record`처럼 score sheet model의 기록 로직입니다.
                 @Justification(reaction: "맞아요.") {
-                    model 계층에서 규칙을 보장합니다.
+                    UI가 아닌 model 계층에서도 중복 기록 규칙을 보장해야 다른 호출 경로에서도 상태가 안전합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                `RoundTabletop.shape`입니다.
+                `YachtScoreRow`의 `.disabled` modifier만으로 충분합니다.
                 @Justification(reaction: "아닙니다.") {
-                    tabletop geometry와 무관합니다.
+                    UI 차단은 보조 수단이고, 핵심 게임 규칙은 model에서도 검증하는 편이 안전합니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                `TabletopGame.withCurrentSnapshot`이 이미 기록된 category를 자동으로 걸러 줍니다.
+                @Justification(reaction: "아닙니다.") {
+                    TabletopKit snapshot은 dice state를 제공하며 Yacht score sheet의 category 기록 규칙을 알지 못합니다.
                 }
             }
         }
         @MultipleChoice {
             점수를 기록한 직후 turn state를 초기화하는 이유는 무엇인가요?
+            @Choice(isCorrect: false) {
+                score를 기록할 때마다 새로운 `TabletopGame` instance를 만들어야 하기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    같은 TabletopGame을 유지한 채 Yacht의 다음 turn으로 넘어갑니다.
+                }
+            }
             @Choice(isCorrect: true) {
-                선택한 category로 한 턴이 끝났으므로 다음 턴을 새 roll 상태로 시작하기 위해서입니다.
+                category 선택으로 현재 turn이 끝났으므로 roll count와 Hold를 초기화해 다음 turn을 새 상태로 시작하기 위해서입니다.
                 @Justification(reaction: "정답입니다.") {
-                    roll count와 Hold도 함께 초기화합니다.
+                    기록된 score는 유지하고 turn에만 속한 임시 상태를 정리합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                TabletopKit session을 종료하기 위해서입니다.
+                기록된 score를 preview dictionary로 다시 되돌리기 위해서입니다.
                 @Justification(reaction: "아닙니다.") {
-                    game session은 계속됩니다.
+                    recorded score는 score sheet에 유지되고 preview는 다음 roll 결과에서 다시 계산합니다.
                 }
             }
         }

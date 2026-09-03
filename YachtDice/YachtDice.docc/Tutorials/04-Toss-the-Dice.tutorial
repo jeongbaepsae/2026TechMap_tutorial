@@ -14,7 +14,7 @@
             }
             @Step {
                 `ContentView.swift`를 엽니다. `RealityView`에 `.tabletopGame`을 연결합니다. 이 modifier가 SwiftUI의 RealityView와 `TabletopGame` 사이를 이어 주면서 사용자의 spatial gesture가 TabletopKit equipment interaction으로 전달됩니다.
-                @Code(name: "ContentView.swift", file: 04-02-ContentView-TabletopInteraction.swift, previousFile: 02-04-ContentView-Reposition.swift)
+                @Code(name: "ContentView.swift", file: 04-02-ContentView-TabletopInteraction.swift, previousFile: 02-07-ContentView.swift)
             }
         }
     }
@@ -26,7 +26,7 @@
         @Steps {
             @Step {
                 interaction을 다섯 dice로 확장합니다. 사용자가 잡은 `controlledDie`를 기준으로 나머지 dice의 상대 pose를 계산해 하나의 묶음처럼 움직인 뒤, 놓는 순간에는 각 die에 개별 toss를 요청합니다.
-                @Code(name: "DiceInteraction.swift", file: 04-03-DiceInteraction-Five.swift, previousFile: 04-02-DiceInteraction-One.swift)
+                @Code(name: "DiceInteraction.swift", file: 04-03-DiceInteraction-Five.swift, previousFile: 04-01-DiceInteraction-One.swift)
             }
         }
     }
@@ -48,47 +48,65 @@
 
     @Assessments {
         @MultipleChoice {
-            `controlledDie`는 무엇인가요?
+            `controlledDie`는 어떤 dice인가요?
+            @Choice(isCorrect: false) {
+                `game.dice` 배열에서 항상 첫 번째에 있는 dice입니다.
+                @Justification(reaction: "아닙니다.") {
+                    배열 순서가 아니라 사용자가 interaction을 시작한 equipment ID로 결정됩니다.
+                }
+            }
             @Choice(isCorrect: true) {
-                사용자가 직접 집어서 interaction을 시작한 dice입니다.
+                사용자가 직접 집어서 현재 interaction을 시작한 dice입니다.
                 @Justification(reaction: "정답입니다.") {
-                    나머지 dice는 이 equipment를 기준으로 묶습니다.
+                    `initialInteractionValue.controlledEquipmentID`로 해당 die를 찾습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                항상 첫 번째 dice입니다.
+                한 번의 toss에 포함되는 모든 dice를 나타내는 가상의 parent equipment입니다.
                 @Justification(reaction: "아닙니다.") {
-                    사용자가 어떤 dice를 집었는지에 따라 달라집니다.
+                    `controlledDie`는 실제 `Die` 하나이며 나머지 dice를 잠시 그 아래에 grouping합니다.
                 }
             }
         }
         @MultipleChoice {
             gesture가 끝난 뒤 `interaction.toss`를 호출하는 이유는 무엇인가요?
             @Choice(isCorrect: true) {
-                TabletopKit에 toss simulation을 요청하기 위해서입니다.
+                사용자가 놓은 시점부터 TabletopKit에 toss simulation과 resting outcome 계산을 요청하기 위해서입니다.
                 @Justification(reaction: "맞아요.") {
-                    놓는 순간부터 toss outcome을 계산합니다.
+                    gesture 종료를 실제 toss 시작 시점으로 사용합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                SwiftUI animation을 시작하기 위해서입니다.
+                SwiftUI의 gesture animation을 종료하고 view hierarchy를 다시 그리기 위해서입니다.
                 @Justification(reaction: "아닙니다.") {
-                    TabletopKit interaction API입니다.
+                    `interaction.toss`는 SwiftUI animation API가 아니라 TabletopKit interaction API입니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                controlled die의 `EquipmentIdentifier`를 새로운 roll용 ID로 교체하기 위해서입니다.
+                @Justification(reaction: "아닙니다.") {
+                    toss 전후에도 die의 identity는 유지됩니다.
                 }
             }
         }
         @MultipleChoice {
             extra dice를 toss 후 다시 table의 child로 옮기는 이유는 무엇인가요?
-            @Choice(isCorrect: true) {
-                interaction 중 임시로 controlled die 아래에 묶었던 좌표계를 원래 tabletop 기준으로 복구하기 위해서입니다.
-                @Justification(reaction: "정답입니다.") {
-                    임시 grouping을 해제하는 과정입니다.
+            @Choice(isCorrect: false) {
+                다음 toss 전에 dice마다 새로운 face map을 다시 적용하기 위해서입니다.
+                @Justification(reaction: "아닙니다.") {
+                    face map은 die가 유지하고 있는 규칙이며 reparenting과 무관합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                dice ID를 새로 만들기 위해서입니다.
+                toss가 끝날 때마다 equipment ID를 table ID의 하위 값으로 바꾸기 위해서입니다.
                 @Justification(reaction: "아닙니다.") {
-                    ID는 바뀌지 않습니다.
+                    ID를 바꾸는 것이 아니라 parent coordinate system을 복구합니다.
+                }
+            }
+            @Choice(isCorrect: true) {
+                interaction 동안 controlled die 아래에 임시로 묶었던 좌표계를 다시 tabletop 기준으로 복구하기 위해서입니다.
+                @Justification(reaction: "정답입니다.") {
+                    grouping은 함께 움직이기 위한 임시 상태이고, toss 결과는 다시 table 기준의 equipment로 유지합니다.
                 }
             }
         }

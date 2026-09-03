@@ -46,7 +46,7 @@
             }
             @Step {
                 마지막으로 `ContentView.swift`를 엽니다. 앞쪽 ornament에 결과 view를 연결해 3D table과 같은 volume에서 turn 정보를 확인할 수 있게 합니다.
-                @Code(name: "ContentView.swift", file: 05-06-ContentView-Results.swift, previousFile: 04-01-ContentView-TabletopInteraction.swift)
+                @Code(name: "ContentView.swift", file: 05-06-ContentView-Results.swift, previousFile: 04-02-ContentView-TabletopInteraction.swift)
             }
         }
     }
@@ -69,46 +69,64 @@
     @Assessments {
         @MultipleChoice {
             `FaceMap`이 필요한 이유는 무엇인가요?
-            @Choice(isCorrect: true) {
-                논리적인 cube face와 게임에서 사용할 숫자 값을 분리하기 위해서입니다.
-                @Justification(reaction: "정답입니다.") {
-                    같은 shape도 다른 face 값 규칙을 가질 수 있습니다.
+            @Choice(isCorrect: false) {
+                D6 mesh의 각 면에 다른 texture를 배치하기 위한 UV mapping 정보를 제공하기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    `FaceMap`은 material이나 UV가 아니라 논리적인 toss face와 게임 값을 연결합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                RealityKit texture를 바꾸기 위해서입니다.
+                `TabletopGame` snapshot이 매 roll의 결과를 자동으로 `[Int]`로 저장하게 만들기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    material과는 별개입니다.
+                    snapshot은 equipment state를 제공하고, 숫자 값으로 변환하는 과정은 직접 구현합니다.
+                }
+            }
+            @Choice(isCorrect: true) {
+                toss simulation의 논리적인 cube face를 Yacht에서 사용할 1~6 값으로 변환하기 위해서입니다.
+                @Justification(reaction: "정답입니다.") {
+                    shape의 face와 게임 규칙의 숫자 값을 분리하면 같은 representation도 다른 값 규칙을 적용할 수 있습니다.
                 }
             }
         }
         @MultipleChoice {
             현재 dice 결과를 읽을 때 사용하는 것은 무엇인가요?
+            @Choice(isCorrect: false) {
+                `GeometryReader3D`가 반환한 volume의 현재 frame입니다.
+                @Justification(reaction: "아닙니다.") {
+                    geometry frame은 table 위치를 volume에 맞추는 데 사용합니다.
+                }
+            }
             @Choice(isCorrect: true) {
-                `TabletopGame`의 current snapshot입니다.
+                `TabletopGame`의 current snapshot에서 각 die의 equipment state를 읽습니다.
                 @Justification(reaction: "맞아요.") {
-                    snapshot에서 각 equipment state를 읽습니다.
+                    snapshot의 `state(for:)`와 `Die.calculateScore`를 조합해 현재 face 값을 얻습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                SwiftUI `GeometryReader3D`의 frame입니다.
+                gesture가 끝났을 때 전달된 drag velocity를 1~6 범위로 변환합니다.
                 @Justification(reaction: "아닙니다.") {
-                    frame은 table 위치 조정에 사용합니다.
+                    속도는 toss 결과 숫자를 직접 결정하는 값으로 사용하지 않습니다.
                 }
             }
         }
         @MultipleChoice {
             최대 세 번이라는 규칙을 TabletopKit이 아닌 `YachtGame`에 두는 이유는 무엇인가요?
             @Choice(isCorrect: true) {
-                세 번 제한은 TabletopKit 공통 동작이 아니라 Yacht의 게임 규칙이기 때문입니다.
+                세 번 제한은 TabletopKit의 공통 interaction 규칙이 아니라 Yacht가 정의한 게임 규칙이기 때문입니다.
                 @Justification(reaction: "정답입니다.") {
-                    framework 역할과 game rule을 분리합니다.
+                    framework가 제공하는 toss 기능과 앱의 turn rule을 분리하면 역할이 명확해집니다.
                 }
             }
             @Choice(isCorrect: false) {
-                `YachtGame`만 Int를 저장할 수 있기 때문입니다.
+                TabletopKit은 한 session에서 toss 횟수를 한 번만 처리할 수 있기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    타입 제약 때문이 아닙니다.
+                    TabletopKit은 여러 interaction을 처리할 수 있으며 세 번 제한은 이 게임의 정책입니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                `rollCount`처럼 `Int` 타입인 상태는 `TabletopGame`에 저장할 수 없기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    타입 제약 때문이 아니라 게임 책임을 분리하기 위한 설계입니다.
                 }
             }
         }

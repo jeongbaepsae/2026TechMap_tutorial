@@ -66,45 +66,63 @@
         @MultipleChoice {
             Numbers bonus 계산을 `NumbersBonusView`가 아니라 `YachtScoreSheet`에 두는 이유는 무엇인가요?
             @Choice(isCorrect: true) {
-                보너스는 표시 방식이 아니라 게임 규칙이기 때문입니다.
+                보너스는 표시 방식과 무관하게 항상 같은 결과를 내야 하는 게임 규칙이기 때문입니다.
                 @Justification(reaction: "정답입니다.") {
-                    UI와 무관하게 동일한 결과가 나와야 합니다.
+                    bonus rule을 model에 두면 UI가 바뀌어도 scoring 결과를 동일하게 유지할 수 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                SwiftUI View는 Int를 계산할 수 없기 때문입니다.
+                `NumbersBonusView`에서는 `Int` 연산이나 비교식을 사용할 수 없기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    기술적 제한 때문이 아니라 책임 분리 때문입니다.
+                    SwiftUI View에서도 계산은 가능하지만 책임 분리를 위해 model에 둡니다.
+                }
+            }
+            @Choice(isCorrect: false) {
+                TabletopKit이 `YachtScoreSheet` 안의 property만 snapshot에 저장할 수 있기 때문입니다.
+                @Justification(reaction: "아닙니다.") {
+                    Yacht score sheet는 앱의 게임 로직이며 TabletopKit snapshot 저장 규칙 때문이 아닙니다.
                 }
             }
         }
         @MultipleChoice {
-            `isGameFinished`가 true일 때 막아야 하는 동작은 무엇인가요?
+            `isGameFinished`가 true가 된 뒤 막아야 할 동작의 조합으로 가장 적절한 것은 무엇인가요?
+            @Choice(isCorrect: false) {
+                score sheet 표시, final score 표시, 새 게임 버튼 표시를 모두 중단합니다.
+                @Justification(reaction: "아닙니다.") {
+                    완료 결과는 계속 보여 주고 사용자가 새 게임을 시작할 수 있어야 합니다.
+                }
+            }
             @Choice(isCorrect: true) {
-                새로운 roll, Hold 변경, 추가 score commit입니다.
+                새로운 roll, Hold 변경, 추가 score commit처럼 완료된 game state를 바꾸는 동작을 막습니다.
                 @Justification(reaction: "맞아요.") {
-                    완료된 게임의 상태를 더 바꾸지 않게 합니다.
+                    게임이 끝난 뒤에는 결과를 보여 주되 기존 score state를 더 변경하지 않도록 합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                score sheet를 화면에 표시하는 것 자체입니다.
+                RealityKit의 table과 dice rendering만 중단하고 scoring interaction은 계속 허용합니다.
                 @Justification(reaction: "아닙니다.") {
-                    final score는 계속 보여야 합니다.
+                    rendering을 멈추는 것이 목적이 아니라 완료된 게임의 논리 상태 변경을 막는 것이 핵심입니다.
                 }
             }
         }
         @MultipleChoice {
-            새 게임을 시작할 때 함께 초기화해야 하는 것은 무엇인가요?
-            @Choice(isCorrect: true) {
-                score sheet, roll count, Hold, 마지막 dice 결과입니다.
-                @Justification(reaction: "정답입니다.") {
-                    새로운 game state로 돌아가야 합니다.
+            새 게임을 시작할 때 함께 초기화해야 하는 상태의 조합으로 가장 적절한 것은 무엇인가요?
+            @Choice(isCorrect: false) {
+                `RealityKitContent` package와 D6 USDZ를 다시 로드하고 기존 asset 파일을 삭제합니다.
+                @Justification(reaction: "아닙니다.") {
+                    asset resource는 게임 state와 무관하므로 다시 만들 필요가 없습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                RealityKitContent package 파일입니다.
+                `rollCount`만 0으로 바꾸고 기존 Hold와 score sheet는 다음 게임에서도 유지합니다.
                 @Justification(reaction: "아닙니다.") {
-                    asset 자체를 초기화할 필요는 없습니다.
+                    이전 game의 선택과 기록이 남으면 새로운 game state가 되지 않습니다.
+                }
+            }
+            @Choice(isCorrect: true) {
+                score sheet, roll count, Hold 상태, 마지막 dice 결과처럼 이전 게임에 속한 상태를 함께 초기화합니다.
+                @Justification(reaction: "정답입니다.") {
+                    새로운 game은 이전 점수와 turn state가 남지 않은 초기 상태에서 시작해야 합니다.
                 }
             }
         }

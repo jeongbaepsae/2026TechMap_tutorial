@@ -1,3 +1,7 @@
+import SwiftUI
+import RealityKit
+import RealityKitContent
+
 struct ContentView: View {
 
     @State var enlarge = false

@@ -1,3 +1,7 @@
+import SwiftUI
+import RealityKit
+import TabletopKit
+
 struct ContentView: View {
     @Environment(YachtGame.self) private var game
 

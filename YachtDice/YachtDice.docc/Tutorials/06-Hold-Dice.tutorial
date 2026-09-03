@@ -9,12 +9,12 @@
         }
         @Steps {
             @Step {
-                먼저 `YachtGame.swift`를 엽니다. `heldDieIDs`, `rollableDice`, `toggleHold`를 추가합니다. Hold 여부를 `EquipmentIdentifier`로 저장하면 UI에서 선택한 die와 TabletopInteraction이 다루는 equipment를 같은 식별자로 연결할 수 있습니다.
-                @Code(name: "YachtGame.swift", file: 06-01-YachtGame-Hold.swift, previousFile: 05-03-YachtGame-RollState.swift)
+                먼저 `Die.swift`로 이동합니다. Hold 여부를 눈으로 알 수 있도록 material tint를 바꾸는 helper를 추가합니다.
+                @Code(name: "Die.swift", file: 06-01-Die-HoldAppearance.swift, previousFile: 05-02-Die-FaceMap.swift)
             }
             @Step {
-                이제 `Die.swift`로 이동합니다. Hold 여부를 눈으로 알 수 있도록 material tint를 바꾸는 helper를 추가합니다.
-                @Code(name: "Die.swift", file: 06-02-Die-HoldAppearance.swift, previousFile: 05-02-Die-FaceMap.swift)
+                이제 `YachtGame.swift`를 엽니다. `heldDieIDs`, `rollableDice`, `toggleHold`를 추가합니다. Hold 여부를 `EquipmentIdentifier`로 저장하면 UI에서 선택한 die와 TabletopInteraction이 다루는 equipment를 같은 식별자로 연결할 수 있습니다.
+                @Code(name: "YachtGame.swift", file: 06-02-YachtGame-Hold.swift, previousFile: 05-03-YachtGame-RollState.swift)
             }
         }
     }

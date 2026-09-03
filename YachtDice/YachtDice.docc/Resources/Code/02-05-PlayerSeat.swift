@@ -1,4 +1,3 @@
-import Spatial
 import TabletopKit
 internal import Spatial
 

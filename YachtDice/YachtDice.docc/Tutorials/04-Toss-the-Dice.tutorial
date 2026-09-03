@@ -9,12 +9,12 @@
         }
         @Steps {
             @Step {
-                먼저 `ContentView.swift`를 엽니다. `RealityView`에 `.tabletopGame`을 연결합니다. 이 modifier가 SwiftUI의 RealityView와 `TabletopGame` 사이를 이어 주면서 사용자의 spatial gesture가 TabletopKit equipment interaction으로 전달됩니다.
-                @Code(name: "ContentView.swift", file: 04-01-ContentView-TabletopInteraction.swift, previousFile: 02-04-ContentView-Reposition.swift)
+                먼저 `DiceInteraction.swift` 파일을 새로 만듭니다. controlled die를 찾은 뒤 gesture가 끝나면 `interaction.toss`를 요청하도록 interaction의 기본 흐름을 구현합니다.
+                @Code(name: "DiceInteraction.swift", file: 04-01-DiceInteraction-One.swift, reset: true)
             }
             @Step {
-                `DiceInteraction.swift` 파일을 새로 만듭니다. controlled die를 찾은 뒤 gesture가 끝나면 `interaction.toss`를 요청하도록 interaction의 기본 흐름을 구현합니다.
-                @Code(name: "DiceInteraction.swift", file: 04-02-DiceInteraction-One.swift, reset: true)
+                `ContentView.swift`를 엽니다. `RealityView`에 `.tabletopGame`을 연결합니다. 이 modifier가 SwiftUI의 RealityView와 `TabletopGame` 사이를 이어 주면서 사용자의 spatial gesture가 TabletopKit equipment interaction으로 전달됩니다.
+                @Code(name: "ContentView.swift", file: 04-02-ContentView-TabletopInteraction.swift, previousFile: 02-04-ContentView-Reposition.swift)
             }
         }
     }

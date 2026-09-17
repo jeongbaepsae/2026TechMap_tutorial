@@ -62,6 +62,10 @@
         @Steps {
             @Step {
                 dice를 세 번 굴려 1~6 결과와 roll 횟수가 갱신되고, 세 번째 이후에는 새 toss가 시작되지 않는지 확인합니다.
+                @Image(
+                    source: "5_Section 4_Step 1.png",
+                    alt: "Dice 결과 view에 Roll 3 / 3과 다섯 개의 1~6 값, Total 20이 표시되어 있습니다."
+                )
             }
         }
     }

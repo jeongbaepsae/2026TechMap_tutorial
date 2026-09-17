@@ -44,6 +44,10 @@
         @Steps {
             @Step {
                 앱을 다시 실행해 table 위에 D6 다섯 개가 서로 겹치지 않고 배치되는지 확인합니다.
+                @Image(
+                    source: "3_Section 3_Step 1.png",
+                    alt: "visionOS Simulator의 round table 위에 D6 다섯 개가 겹치지 않고 나란히 놓여 있습니다."
+                )
             }
         }
     }

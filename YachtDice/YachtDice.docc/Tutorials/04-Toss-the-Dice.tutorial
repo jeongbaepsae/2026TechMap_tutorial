@@ -42,6 +42,10 @@
         @Steps {
             @Step {
                 앱에서 dice 하나를 집어 움직인 뒤 놓고, 다섯 dice가 함께 toss되는지 확인합니다.
+                @Image(
+                    source: "4_Section 3_Step 1.png",
+                    alt: "다섯 개의 D6가 toss된 뒤 서로 다른 위치와 회전으로 흩어져 있습니다."
+                )
             }
         }
     }

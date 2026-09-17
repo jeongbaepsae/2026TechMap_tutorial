@@ -58,6 +58,10 @@
         @Steps {
             @Step {
                 모든 category를 기록한 뒤 final score와 `Start New Game`이 나타나는지 확인하고, 새 게임을 시작해 score sheet와 turn state가 초기화되는지 확인합니다.
+                @Image(
+                    source: "9_Section 3_Step 1.png",
+                    alt: "12개 category가 모두 채워진 score sheet 아래에 Game Complete, Final Score 120, Start New Game 버튼이 표시되어 있습니다."
+                )
             }
         }
     }

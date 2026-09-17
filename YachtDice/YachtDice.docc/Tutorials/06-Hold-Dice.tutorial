@@ -54,6 +54,10 @@
         @Steps {
             @Step {
                 첫 roll 뒤 일부 dice를 Hold한 다음 다시 toss해, 선택한 dice만 제자리에 남는지 확인합니다.
+                @Image(
+                    source: "6_Section 3_Step 1.png",
+                    alt: "결과 패널에서 세 개의 dice가 파란색과 lock 배지로 Hold 표시되어 있고, 3D table 위의 해당 dice도 같은 파란색으로 강조되어 있습니다."
+                )
             }
         }
     }

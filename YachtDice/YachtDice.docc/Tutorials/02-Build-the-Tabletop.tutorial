@@ -56,6 +56,10 @@
         @Steps {
             @Step {
                 Simulator에서 앱을 실행해 volume 바닥에 round table이 표시되는지 확인합니다.
+                @Image(
+                    source: "2_Section 3_Step 1.png",
+                    alt: "visionOS Simulator의 거실 환경에 dice 없이 round table만 놓여 있습니다."
+                )
             }
         }
     }

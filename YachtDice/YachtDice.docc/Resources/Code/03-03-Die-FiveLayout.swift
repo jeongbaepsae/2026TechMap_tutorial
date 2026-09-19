@@ -21,10 +21,9 @@ final class Die: EntityEquipment {
         let initialFace = representation.face(for: .identity)
 
         let spacing: Double = 0.06
-        let startX: Double = -0.15
         let initialPose = TableVisualState.Pose2D(
             position: .init(
-                x: startX + Double(index) * spacing,
+                x: Double(index - 3) * spacing,
                 z: 0
             ),
             rotation: .zero

@@ -5,7 +5,9 @@
 
     @Section(title: "TabletopKit face를 1~6 값으로 바꾸기") {
         @ContentAndMedia {
-            toss outcome의 `rawValue`는 곧바로 Yacht 점수가 아닙니다. cube face와 실제 눈 숫자 사이의 mapping을 별도로 정의합니다.
+            toss outcome의 `rawValue`는 곧바로 Yacht의 1...6 값이 아닙니다. cube face와 실제 눈 숫자 사이의 mapping을 별도로 정의합니다.
+
+            여기서 `.a ... .f`와 1...6의 대응은 튜토리얼에서 제공하는 `D6.usdz`의 orientation을 기준으로 합니다. 다른 D6 asset으로 교체한다면 model의 face orientation에 맞게 mapping도 다시 확인해야 합니다.
         }
         @Steps {
             @Step {
@@ -13,7 +15,7 @@
                 @Code(name: "FaceMappingHelpers.swift", file: 05-01-FaceMappingHelpers.swift, reset: true)
             }
             @Step {
-                이제 `Die.swift`를 엽니다. `faceMap`과 `calculateScore(for:)`를 추가합니다. TabletopKit이 돌려주는 cube face 자체와 Yacht에서 사용하는 1~6 숫자를 분리해 두면, 3D orientation을 게임 규칙에서 직접 해석할 필요가 없습니다.
+                이제 `Die.swift`를 엽니다. `faceMap`과 `dieValue(for:)`를 추가합니다. 이 함수는 점수를 계산하는 것이 아니라 TabletopKit의 cube face를 D6의 1...6 값으로 변환합니다. 점수 계산은 이후 `YachtScoreCalculator`가 별도로 담당합니다.
                 @Code(name: "Die.swift", file: 05-02-Die-FaceMap.swift, previousFile: 03-03-Die-FiveLayout.swift)
             }
         }
@@ -21,19 +23,24 @@
 
     @Section(title: "한 턴의 roll state 만들기") {
         @ContentAndMedia {
-            TabletopKit은 toss 결과를 관리하지만 “한 턴에 세 번”이라는 Yacht 규칙까지 정하지는 않습니다. 이 규칙은 `YachtGame`의 상태로 둡니다.
+            TabletopKit은 toss 결과를 관리하지만 “한 턴에 세 번”이라는 Yacht 규칙까지 정하지는 않습니다. `YachtGame`에는 turn state를 저장하고, 그 상태를 해석하는 roll 동작은 extension으로 분리합니다.
         }
         @Steps {
             @Step {
-                이제 `YachtGame.swift`로 이동합니다. `lastRollResults`, `rollCount`, `isRolling`과 `finishRoll()`을 추가합니다. snapshot을 읽어 다섯 dice의 현재 face를 저장합니다.
+                `YachtGame.swift`에 `lastRollResults`, `rollCount`, `isRolling`을 추가합니다. 3D scene과 game object를 만드는 기본 구조는 그대로 유지합니다.
                 @Code(name: "YachtGame.swift", file: 05-03-YachtGame-RollState.swift, previousFile: 03-04-YachtGame-FiveDice.swift)
             }
             @Step {
-                이제 `DiceInteraction.swift`로 이동합니다. interaction 시작 시 `canStartRoll`을 검사하고, 정상적인 toss가 끝났을 때만 `finishRoll()`을 호출하도록 바꿉니다.
-                @Code(name: "DiceInteraction.swift", file: 05-04-DiceInteraction-RollState.swift, previousFile: 04-03-DiceInteraction-Five.swift)
+                roll 가능 여부, snapshot 결과 읽기, roll 종료 처리는 `YachtGame+Turn.swift` extension으로 분리합니다.
+                @Code(name: "YachtGame+Turn.swift", file: 05-04-YachtGame+Turn-Roll.swift, reset: true)
+            }
+            @Step {
+                `DiceInteraction+Update.swift`에서 roll 가능 여부를 확인하고 정상적인 toss가 끝났을 때 `finishRoll()`을 호출하도록 lifecycle을 확장합니다.
+                @Code(name: "DiceInteraction+Update.swift", file: 05-05-DiceInteraction+Update-RollState.swift, previousFile: 04-04-DiceInteraction+Update-Five.swift)
             }
         }
     }
+
 
     @Section(title: "결과를 화면에서 확인하기") {
         @ContentAndMedia {
@@ -42,11 +49,11 @@
         @Steps {
             @Step {
                 `DiceResultsView.swift` 파일을 새로 만듭니다. 다섯 결과, 합계, 현재 roll 횟수를 표시합니다.
-                @Code(name: "DiceResultsView.swift", file: 05-05-DiceResultsView.swift, reset: true)
+                @Code(name: "DiceResultsView.swift", file: 05-06-DiceResultsView.swift, reset: true)
             }
             @Step {
                 마지막으로 `ContentView.swift`를 엽니다. 앞쪽 ornament에 결과 view를 연결해 3D table과 같은 volume에서 turn 정보를 확인할 수 있게 합니다.
-                @Code(name: "ContentView.swift", file: 05-06-ContentView-Results.swift, previousFile: 04-02-ContentView-TabletopInteraction.swift)
+                @Code(name: "ContentView.swift", file: 05-07-ContentView-Results.swift, previousFile: 04-02-ContentView-TabletopInteraction.swift)
             }
         }
     }
@@ -58,6 +65,8 @@
             toss가 끝나면 흐름은 `TabletopGame` snapshot → `Die.faceMap` → `YachtGame.lastRollResults` 순서로 이어집니다. 여기에 `rollCount`를 함께 저장함으로써 TabletopKit의 물리 결과를 Yacht의 “한 턴에 최대 세 번” 규칙으로 변환합니다.
 
             현재는 매 roll마다 다섯 dice가 모두 toss 대상입니다. 다음 단원에서는 Hold 상태를 추가해 이 turn state를 기준으로 다음 toss에 참여할 equipment를 선택합니다.
+
+            화면의 숫자가 실제 D6 윗면과 다르게 나온다면 먼저 `cubeFaceMap`이 현재 사용하는 D6 asset의 orientation과 일치하는지 확인합니다.
         }
         @Steps {
             @Step {
@@ -103,7 +112,7 @@
             @Choice(isCorrect: true) {
                 `TabletopGame`의 current snapshot에서 각 die의 equipment state를 읽습니다.
                 @Justification(reaction: "맞아요.") {
-                    snapshot의 `state(for:)`와 `Die.calculateScore`를 조합해 현재 face 값을 얻습니다.
+                    snapshot의 `state(for:)`와 `Die.dieValue(for:)`를 조합해 현재 face 값을 얻습니다.
                 }
             }
             @Choice(isCorrect: false) {

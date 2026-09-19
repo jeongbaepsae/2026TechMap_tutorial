@@ -35,7 +35,6 @@ struct ContentView: View {
                 rollCount: game.rollCount,
                 maximumRollCount: YachtGame.maximumRollCount,
                 isRolling: game.isRolling,
-                isGameFinished: false,
                 onTapDie: { index in
                     game.toggleHold(at: index)
                 }

@@ -10,9 +10,9 @@ final class YachtGame {
     let tabletopGame: TabletopGame
     let dice: [Die]
 
-    private(set) var lastRollResults: [Int] = []
-    private(set) var heldDieIDs: Set<EquipmentIdentifier> = []
-    private(set) var rollCount = 0
+    var lastRollResults: [Int] = []
+    var heldDieIDs: Set<EquipmentIdentifier> = []
+    var rollCount = 0
     var isRolling = false
 
     @MainActor
@@ -40,50 +40,6 @@ final class YachtGame {
         tabletopGame.claimAnySeat()
     }
 
-    var lastRollScore: Int { lastRollResults.reduce(0, +) }
-    var hasRolled: Bool { lastRollResults.count == dice.count }
-
-    var rollableDice: [Die] {
-        dice.filter { !heldDieIDs.contains($0.id) }
-    }
-
-    var heldDieIndices: Set<Int> {
-        Set(dice.indices.filter { heldDieIDs.contains(dice[$0].id) })
-    }
-
-    var canStartRoll: Bool {
-        !isRolling &&
-        rollCount < Self.maximumRollCount &&
-        !rollableDice.isEmpty
-    }
-
-    var canToggleHold: Bool {
-        hasRolled &&
-        !isRolling &&
-        rollCount < Self.maximumRollCount
-    }
-
-    func isHeld(_ die: Die) -> Bool {
-        heldDieIDs.contains(die.id)
-    }
-
-    func toggleHold(at index: Int) {
-        guard canToggleHold, dice.indices.contains(index) else {
-            return
-        }
-
-        let die = dice[index]
-        let shouldHold = !isHeld(die)
-
-        if shouldHold {
-            heldDieIDs.insert(die.id)
-        } else {
-            heldDieIDs.remove(die.id)
-        }
-
-        die.setHeldAppearance(shouldHold)
-    }
-
     func repositionTable(
         content: RealityViewContent,
         proxy: GeometryProxy3D
@@ -94,23 +50,5 @@ final class YachtGame {
             to: .scene
         )
         root.transform.translation = .init(x: 0, y: frame.min.y, z: 0)
-    }
-
-    func updateDiceResults() {
-        tabletopGame.withCurrentSnapshot { snapshot in
-            lastRollResults = dice.map { die in
-                die.calculateScore(for: snapshot.state(for: die))
-            }
-        }
-    }
-
-    func finishRoll() {
-        guard rollCount < Self.maximumRollCount else {
-            isRolling = false
-            return
-        }
-        updateDiceResults()
-        rollCount += 1
-        isRolling = false
     }
 }

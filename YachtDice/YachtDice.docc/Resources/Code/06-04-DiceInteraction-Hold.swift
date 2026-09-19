@@ -19,7 +19,7 @@ final class DiceInteraction: TabletopInteraction.Delegate {
         )!
 
         controlledDie = selectedDie
-        extraDiceToToss = game.dice.filter { die in
+        extraDiceToToss = game.rollableDice.filter { die in
             die.id != selectedDie.id
         }
     }

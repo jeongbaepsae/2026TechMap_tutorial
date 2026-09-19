@@ -1,12 +1,6 @@
 import Foundation
 
 struct YachtScoreCalculator {
-    private enum Score {
-        static let smallStraight = 15
-        static let largeStraight = 30
-        static let yacht = 50
-    }
-
     func score(
         dice: [Int],
         category: YachtCategory
@@ -17,9 +11,7 @@ struct YachtScoreCalculator {
         }
 
         if let targetFace = category.targetFace {
-            return dice
-                .filter { $0 == targetFace }
-                .reduce(0, +)
+            return dice.filter { $0 == targetFace }.reduce(0, +)
         }
 
         switch category {
@@ -50,47 +42,18 @@ struct YachtScoreCalculator {
 
     private func fourOfAKindScore(dice: [Int]) -> Int {
         let counts = frequencyMap(for: dice)
-        guard counts.values.contains(where: { $0 >= 4 }) else {
-            return 0
-        }
+        guard counts.values.contains(where: { $0 >= 4 }) else { return 0 }
         return dice.reduce(0, +)
     }
 
     private func fullHouseScore(dice: [Int]) -> Int {
-        let sortedCounts = frequencyMap(for: dice).values.sorted()
-        guard sortedCounts == [2, 3] else {
-            return 0
-        }
-        return dice.reduce(0, +)
-    }
-
-    private func smallStraightScore(dice: [Int]) -> Int {
-        let values = Set(dice)
-        let patterns: [Set<Int>] = [
-            [1, 2, 3, 4],
-            [2, 3, 4, 5],
-            [3, 4, 5, 6]
-        ]
-        return patterns.contains(where: { $0.isSubset(of: values) })
-            ? Score.smallStraight
-            : 0
-    }
-
-    private func largeStraightScore(dice: [Int]) -> Int {
-        let values = Set(dice)
-        let isStraight =
-            values == Set([1, 2, 3, 4, 5]) ||
-            values == Set([2, 3, 4, 5, 6])
-        return isStraight ? Score.largeStraight : 0
-    }
-
-    private func yachtScore(dice: [Int]) -> Int {
-        Set(dice).count == 1 ? Score.yacht : 0
+        let counts = frequencyMap(for: dice).values.sorted()
+        return counts == [2, 3] ? dice.reduce(0, +) : 0
     }
 
     private func frequencyMap(for dice: [Int]) -> [Int: Int] {
-        dice.reduce(into: [:]) { result, value in
-            result[value, default: 0] += 1
+        dice.reduce(into: [:]) { counts, value in
+            counts[value, default: 0] += 1
         }
     }
 }

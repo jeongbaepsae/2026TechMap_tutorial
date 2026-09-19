@@ -6,6 +6,18 @@
     @Section(title: "점수 category 정의하기") {
         @ContentAndMedia {
             화면 문자열을 직접 조건문에 사용하지 않고 `YachtCategory` enum으로 category를 표현합니다. Numbers와 combination section도 여기서 구분합니다.
+
+            이 샘플의 scoring rule은 다음과 같습니다.
+
+            | Category | 계산 방식 |
+            | --- | --- |
+            | Ones...Sixes | 해당 숫자의 합 |
+            | Choice | 다섯 dice의 전체 합 |
+            | Four of a Kind | 같은 숫자가 4개 이상이면 전체 합 |
+            | Full House | 2개 + 3개 조합이면 전체 합 |
+            | Small Straight | 조건을 만족하면 15점 |
+            | Large Straight | 조건을 만족하면 30점 |
+            | Yacht | 같은 숫자 5개면 50점 |
         }
         @Steps {
             @Step {
@@ -25,23 +37,37 @@
                 @Code(name: "YachtScoreCalculator.swift", file: 07-02-YachtScoreCalculator-Basic.swift, reset: true)
             }
             @Step {
-                먼저 frequency map을 추가해 Four of a Kind와 Full House를 처리합니다. 두 규칙이 **같은 빈도 데이터**를 재사용하는 구조를 확인하세요.
+                먼저 frequency map을 추가해 Four of a Kind와 Full House를 처리합니다. `Dictionary`에 각 눈이 나온 횟수를 모으면 두 규칙이 **같은 빈도 데이터**를 재사용할 수 있습니다. `reduce(into:)`가 배열을 한 번 순회하며 이 dictionary를 만드는 과정도 함께 확인하세요.
                 @Code(name: "YachtScoreCalculator.swift", file: 07-03-YachtScoreCalculator-Groups.swift, previousFile: 07-02-YachtScoreCalculator-Basic.swift)
             }
             @Step {
-                `Set`을 이용한 Straight와 Yacht 규칙, 모든 category preview를 만드는 `scores(for:)`를 추가합니다.
-                @Code(name: "YachtScoreCalculator.swift", file: 07-04-YachtScoreCalculator-All.swift, previousFile: 07-03-YachtScoreCalculator-Groups.swift)
+                Straight와 Yacht처럼 **눈의 패턴**을 검사하는 helper는 `YachtScoreCalculator+Patterns.swift` extension으로 분리합니다. `Set`과 `isSubset(of:)`를 이용해 순서가 아닌 포함 관계를 검사합니다.
+                @Code(name: "YachtScoreCalculator+Patterns.swift", file: 07-04-YachtScoreCalculator+Patterns.swift, reset: true)
             }
             @Step {
-                이제 `YachtGame.swift`로 이동합니다. calculator를 연결하고 현재 roll에 대한 모든 category preview를 계산합니다.
-                @Code(name: "YachtGame.swift", file: 07-05-YachtGame-Previews.swift, previousFile: 06-02-YachtGame-Hold.swift)
+                `YachtScoreCalculator.swift`에서 새 pattern helper를 호출하고, 모든 category preview를 만드는 `scores(for:)`를 추가합니다.
+                @Code(name: "YachtScoreCalculator.swift", file: 07-05-YachtScoreCalculator-All.swift, previousFile: 07-03-YachtScoreCalculator-Groups.swift)
+            }
+            @Step {
+                이제 `YachtGame.swift`로 이동해 calculator를 저장합니다. 3D scene을 만드는 기본 구조는 그대로 유지합니다.
+                @Code(name: "YachtGame.swift", file: 07-06-YachtGame-Scoring.swift, previousFile: 06-02-YachtGame-Hold.swift)
+            }
+            @Step {
+                현재 roll의 category preview 계산은 `YachtGame+Scoring.swift` extension으로 분리합니다.
+                @Code(name: "YachtGame+Scoring.swift", file: 07-07-YachtGame+Scoring-Preview.swift, reset: true)
             }
         }
     }
 
     @Section(title: "확인하기") {
         @ContentAndMedia {
-            예를 들어 `[6, 6, 6, 6, 2]`라면 Sixes는 24점, Four of a Kind는 26점처럼 category마다 다른 preview를 얻을 수 있습니다.
+            계산기는 다음처럼 같은 dice 결과를 category마다 다르게 해석합니다.
+
+            | Dice | 확인할 결과 |
+            | --- | --- |
+            | `[6, 6, 6, 6, 2]` | Sixes 24, Four of a Kind 26 |
+            | `[2, 2, 3, 3, 3]` | Full House 13 |
+            | `[1, 2, 3, 4, 6]` | Small Straight 15 |
 
             `YachtScoreCalculator`는 TabletopKit이나 RealityKit 타입에 의존하지 않고 `[Int]`만 받습니다. 덕분에 3D interaction에서 얻은 결과를 순수한 게임 데이터로 바꾼 뒤, 각 category의 예상 점수를 독립적으로 계산할 수 있습니다.
 
@@ -49,7 +75,7 @@
         }
         @Steps {
             @Step {
-                `[6, 6, 6, 6, 2]`를 예로 들어 `YachtScoreCalculator`가 Sixes와 Four of a Kind를 각각 어떤 값으로 계산하는지 코드 흐름을 따라 확인합니다.
+                위 세 가지 예시를 `YachtScoreCalculator.score(dice:category:)`의 입력과 비교하며 각 규칙이 어떤 값을 반환하는지 확인합니다. 예를 들어 `[2, 2, 3, 3, 3]`을 `.fullHouse`에 전달하면 13, `[1, 2, 3, 4, 6]`을 `.smallStraight`에 전달하면 15가 되어야 합니다.
             }
         }
     }

@@ -5,7 +5,9 @@
 
     @Section(title: "SwiftUI view와 TabletopInteraction 연결하기") {
         @ContentAndMedia {
-            `.tabletopGame` modifier는 RealityView의 entity와 TabletopKit game state 사이에 interaction을 연결합니다. 사용자가 equipment를 조작하기 시작하면 delegate 역할을 하는 `DiceInteraction`을 만듭니다.
+            2단원에서 `.tabletopGame` modifier로 RealityView와 `TabletopGame`을 연결했습니다. 이번에는 같은 modifier에 interaction closure를 추가해 사용자의 spatial gesture를 `DiceInteraction`으로 전달합니다.
+
+            interaction은 **equipment를 집음 → interaction 생성 → 움직이는 동안 pose 갱신 → 손을 놓음 → `interaction.toss(...)` 요청 → resting outcome 계산 → snapshot 갱신** 순서로 진행됩니다. `DiceInteraction`은 이 흐름에서 gesture와 TabletopKit toss 사이를 이어 줍니다.
         }
         @Steps {
             @Step {
@@ -13,7 +15,7 @@
                 @Code(name: "DiceInteraction.swift", file: 04-01-DiceInteraction-One.swift, reset: true)
             }
             @Step {
-                `ContentView.swift`를 엽니다. `RealityView`에 `.tabletopGame`을 연결합니다. 이 modifier가 SwiftUI의 RealityView와 `TabletopGame` 사이를 이어 주면서 사용자의 spatial gesture가 TabletopKit equipment interaction으로 전달됩니다.
+                `ContentView.swift`를 엽니다. 2단원에서 추가한 `.tabletopGame(_:parent:)`을 interaction closure가 있는 형태로 확장합니다. 이제 사용자가 equipment를 조작하면 `DiceInteraction`이 생성되어 spatial gesture를 TabletopKit interaction으로 처리합니다.
                 @Code(name: "ContentView.swift", file: 04-02-ContentView-TabletopInteraction.swift, previousFile: 02-07-ContentView.swift)
             }
         }
@@ -21,15 +23,24 @@
 
     @Section(title: "한 개의 gesture로 다섯 개 toss하기") {
         @ContentAndMedia {
-            사용자가 직접 집은 dice를 `controlledDie`, 함께 움직일 나머지를 `extraDiceToToss`로 나눕니다. 시작할 때 네 개를 controlled die의 child로 묶고, toss 결과가 결정되면 다시 table 좌표계로 돌려놓습니다.
+            사용자가 직접 집은 dice를 `controlledDie`, 함께 움직일 나머지를 `extraDiceToToss`로 나눕니다. interaction이 다섯 개로 확장되면 한 파일에 lifecycle과 결과 반영이 모두 모이기 쉬우므로, **상태/초기화**, **gesture update**, **toss outcome 반영**을 각각 나눠 읽습니다.
         }
         @Steps {
             @Step {
-                interaction을 다섯 dice로 확장합니다. 사용자가 잡은 `controlledDie`를 기준으로 나머지 dice의 상대 pose를 계산해 하나의 묶음처럼 움직인 뒤, 놓는 순간에는 각 die에 개별 toss를 요청합니다.
+                `DiceInteraction.swift`에는 interaction이 유지해야 할 상태와 초기화만 남깁니다. 사용자가 잡은 die를 기준으로 함께 움직일 나머지 dice를 찾습니다.
                 @Code(name: "DiceInteraction.swift", file: 04-03-DiceInteraction-Five.swift, previousFile: 04-01-DiceInteraction-One.swift)
+            }
+            @Step {
+                gesture phase에 따라 dice를 묶고 toss를 요청하는 코드는 `DiceInteraction+Update.swift` extension으로 분리합니다.
+                @Code(name: "DiceInteraction+Update.swift", file: 04-04-DiceInteraction+Update-Five.swift, reset: true)
+            }
+            @Step {
+                toss simulation이 계산한 resting orientation과 pose를 equipment state에 반영하는 코드는 `DiceInteraction+TossOutcome.swift`로 분리합니다.
+                @Code(name: "DiceInteraction+TossOutcome.swift", file: 04-05-DiceInteraction+TossOutcome.swift, reset: true)
             }
         }
     }
+
 
     @Section(title: "실행해서 확인하기") {
         @ContentAndMedia {
@@ -38,6 +49,8 @@
             이 시점부터 dice의 pose는 고정된 초기값만 사용하는 것이 아니라 `TabletopInteraction`에 의해 갱신됩니다. 사용자가 직접 잡은 die가 interaction의 기준이 되고, 나머지 네 개는 그 기준에 묶여 함께 이동한 뒤 각자의 toss 결과를 갖습니다.
 
             toss가 끝나면 TabletopKit은 각 die의 최종 face를 snapshot에 남깁니다. 이 값은 아직 Yacht의 1~6 숫자가 아니므로, 다음 단계에서는 face mapping을 통해 게임에서 사용할 결과로 해석합니다.
+
+            주사위는 보이지만 잡히지 않는다면 local seat가 claim되어 있는지와 `.tabletopGame`의 interaction closure가 현재 `ContentView`에 연결되어 있는지 확인합니다.
         }
         @Steps {
             @Step {

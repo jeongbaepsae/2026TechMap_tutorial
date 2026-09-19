@@ -9,15 +9,16 @@ final class YachtGame {
     let root = Entity()
     let tabletopGame: TabletopGame
     let dice: [Die]
+    let scoreCalculator = YachtScoreCalculator()
 
     var lastRollResults: [Int] = []
+    var heldDieIDs: Set<EquipmentIdentifier> = []
     var rollCount = 0
     var isRolling = false
 
     @MainActor
     init() {
         root.name = "Yacht game root"
-
         let tabletop = RoundTabletop()
         let createdDice = (1...5).map { Die(index: $0) }
         dice = createdDice
@@ -30,10 +31,7 @@ final class YachtGame {
                 rotation: .init(degrees: 0)
             )
         )
-
-        for die in createdDice {
-            setup.add(equipment: die)
-        }
+        for die in createdDice { setup.add(equipment: die) }
 
         tabletopGame = TabletopGame(tableSetup: setup)
         tabletopGame.claimAnySeat()

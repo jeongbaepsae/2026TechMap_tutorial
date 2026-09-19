@@ -1,55 +1,71 @@
-@Tutorial(time: 30) {
+@Tutorial(time: 35) {
     @Intro(title: "점수표에 category 기록하기") {
         현재 roll의 preview를 점수표에 표시하고, 사용자가 하나의 category를 선택하면 그 점수를 고정합니다. 기록이 끝나면 Hold와 roll count를 초기화해 다음 턴을 시작합니다.
     }
 
     @Section(title: "기록할 데이터 구조 만들기") {
         @ContentAndMedia {
-            preview는 언제든 다시 계산할 수 있지만, 선택된 category의 점수는 게임이 끝날 때까지 유지해야 합니다. 따라서 별도의 score sheet model을 둡니다.
+            preview는 언제든 다시 계산할 수 있지만 선택된 category의 점수는 게임이 끝날 때까지 유지해야 합니다. 따라서 별도의 score sheet model을 둡니다.
+
+            `YachtScoreEntry`에는 category와 score뿐 아니라 그 점수를 확정했을 때의 dice 결과도 저장합니다. 이 dice 배열은 점수를 다시 계산하기 위한 값이 아니라, 점수표에서 **어떤 주사위 조합으로 기록했는지** 보여 주기 위한 기록입니다.
         }
         @Steps {
             @Step {
-                `YachtScoreEntry.swift` 파일을 새로 만듭니다. category, score, 당시 dice 결과를 함께 저장해 한 번 확정된 점수를 이후 roll과 분리합니다.
+                `YachtScoreEntry.swift` 파일을 새로 만듭니다.
                 @Code(name: "YachtScoreEntry.swift", file: 08-01-YachtScoreEntry.swift, reset: true)
             }
             @Step {
-                `YachtScoreSheet.swift` 파일을 새로 만듭니다. entry dictionary와 `record`를 추가해 같은 category를 두 번 기록하지 못하게 합니다.
+                `YachtScoreSheet.swift`에 entry dictionary와 `record`를 추가합니다.
                 @Code(name: "YachtScoreSheet.swift", file: 08-02-YachtScoreSheet-Basic.swift, reset: true)
             }
             @Step {
-                이제 `YachtGame.swift`로 이동합니다. score sheet와 `commitScore`를 연결합니다. category 하나를 확정하면 그 선택으로 한 턴이 끝난 것이므로 점수를 저장한 뒤 roll count, Hold, 마지막 결과를 다음 턴의 초기 상태로 되돌립니다.
-                @Code(name: "YachtGame.swift", file: 08-03-YachtGame-RecordScore.swift, previousFile: 07-05-YachtGame-Previews.swift)
+                `YachtGame.swift`에는 turn과 별도로 유지될 `scoreSheet` 상태를 추가합니다.
+                @Code(name: "YachtGame.swift", file: 08-03-YachtGame-ScoreSheet.swift, previousFile: 07-06-YachtGame-Scoring.swift)
+            }
+            @Step {
+                category를 확정하고 다음 turn을 초기화하는 동작은 `YachtGame+Scoring.swift`에 추가합니다.
+                @Code(name: "YachtGame+Scoring.swift", file: 08-04-YachtGame+Scoring-Record.swift, previousFile: 07-07-YachtGame+Scoring-Preview.swift)
             }
         }
     }
 
+
     @Section(title: "점수표 UI 연결하기") {
         @ContentAndMedia {
-            이미 기록된 row와 아직 선택 가능한 row의 모양을 분리하면 score sheet가 읽기 쉬워집니다. 여기서는 row → section → 전체 sheet 순서로 조립합니다.
+            이미 기록된 row와 아직 선택 가능한 row의 모양을 분리하면 score sheet가 읽기 쉬워집니다. UI는 아래처럼 작은 component에서 전체 score sheet로 조립합니다.
+
+            `YachtScoreSheetView → YachtScoreSectionView → YachtScoreRow → YachtRecordedScoreRow / DiceFaceSymbolsView`
+
+            데이터 흐름은 `YachtGame`의 preview와 score sheet에서 시작하고, category 선택은 다시 `commitScore(...)`로 돌아갑니다.
         }
         @Steps {
             @Step {
-                `DieFaceSymbol.swift` 파일을 새로 만듭니다. 기록된 dice 결과를 SF Symbols의 주사위 눈으로 표시할 수 있도록 단일 symbol과 다섯 개 결과 view를 정의합니다.
-                @Code(name: "DieFaceSymbol.swift", file: 08-04-DieFaceSymbol.swift, reset: true)
+                `DieFaceSymbol.swift`에서 기록된 dice를 SF Symbols로 표시합니다.
+                @Code(name: "DieFaceSymbol.swift", file: 08-05-DieFaceSymbol.swift, reset: true)
             }
             @Step {
-                `YachtScoreRow.swift` 파일을 새로 만듭니다. 한 category의 이름, 기록된 점수, 아직 확정하지 않은 preview를 한 row에서 표현합니다.
-                @Code(name: "YachtScoreRow.swift", file: 08-04-YachtScoreRow.swift, reset: true)
+                확정된 category의 표시를 `YachtRecordedScoreRow.swift`로 분리합니다.
+                @Code(name: "YachtRecordedScoreRow.swift", file: 08-06-YachtRecordedScoreRow.swift, reset: true)
             }
             @Step {
-                `YachtScoreSectionView.swift` 파일을 새로 만듭니다. 여러 row를 Numbers 또는 Combinations 묶음으로 보여줍니다.
-                @Code(name: "YachtScoreSectionView.swift", file: 08-05-YachtScoreSectionView.swift, reset: true)
+                `YachtScoreRow.swift`는 기록 여부에 따라 recorded row 또는 선택 가능한 preview row를 보여 줍니다.
+                @Code(name: "YachtScoreRow.swift", file: 08-07-YachtScoreRow.swift, reset: true)
             }
             @Step {
-                `YachtScoreSheetView.swift` 파일을 새로 만듭니다. 두 section과 total을 한 화면에 조립합니다.
-                @Code(name: "YachtScoreSheetView.swift", file: 08-06-YachtScoreSheetView-Basic.swift, reset: true)
+                `YachtScoreSectionView.swift`에서 여러 row를 Numbers 또는 Combinations 묶음으로 보여 줍니다.
+                @Code(name: "YachtScoreSectionView.swift", file: 08-08-YachtScoreSectionView.swift, reset: true)
             }
             @Step {
-                마지막으로 `ContentView.swift`를 엽니다. 뒤쪽 ornament에 score sheet를 배치하고 category tap을 `commitScore`에 연결합니다.
-                @Code(name: "ContentView.swift", file: 08-07-ContentView-ScoreSheet.swift, previousFile: 06-06-ContentView-Hold.swift)
+                `YachtScoreSheetView.swift`에서 두 section과 total을 조립합니다.
+                @Code(name: "YachtScoreSheetView.swift", file: 08-09-YachtScoreSheetView-Basic.swift, reset: true)
+            }
+            @Step {
+                `ContentView.swift`의 뒤쪽 ornament에 score sheet를 배치하고 category tap을 `commitScore`에 연결합니다.
+                @Code(name: "ContentView.swift", file: 08-10-ContentView-ScoreSheet.swift, previousFile: 06-06-ContentView-Hold.swift)
             }
         }
     }
+
 
     @Section(title: "실행해서 확인하기") {
         @ContentAndMedia {
@@ -58,6 +74,8 @@
             예상 점수와 기록된 점수는 생명주기가 다릅니다. preview는 dice가 바뀔 때마다 다시 계산되지만 `YachtScoreEntry`는 category가 확정된 뒤 게임이 끝날 때까지 유지됩니다. `YachtScoreSheet`가 이 영구 상태를 소유합니다.
 
             각 category의 기록 여부가 score sheet에 남기 때문에 같은 데이터에서 Numbers subtotal과 bonus를 계산하고, 모든 category가 채워졌는지도 판단할 수 있습니다.
+
+            score sheet는 UI component가 많아지는 단원이므로, 코드가 길게 느껴지면 `Entry/Sheet = 데이터`, `Row/Section/SheetView = 표시`, `YachtGame = 두 영역을 연결하는 게임 상태`로 역할을 나눠서 확인합니다.
         }
         @Steps {
             @Step {

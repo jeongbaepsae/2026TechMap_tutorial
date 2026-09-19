@@ -6,6 +6,8 @@
     @Section(title: "3D table을 TabletopKit tabletop으로 만들기") {
         @ContentAndMedia {
             `EntityTabletop`은 RealityKit entity에 TabletopKit이 이해할 **ID와 tabletop shape**를 더합니다. `RoundTabletop`은 앞에서 `RealityKitContent.rkassets/table/`에 넣은 `table.usda`를 `"table/table"` 경로로 불러와, 같은 table을 시각적 object이자 논리적 game board로 사용합니다.
+
+            이 단원에서는 비슷해 보이는 세 역할을 구분해서 사용합니다. `TableSetup`은 게임을 시작할 때 사용할 tabletop, seat, equipment의 **초기 구성**을 정의하고, `TabletopGame`은 그 구성을 바탕으로 **실행 중인 game state**를 관리합니다. 마지막으로 SwiftUI의 `.tabletopGame(_:parent:)` modifier가 `TabletopGame`을 RealityKit scene에 연결합니다.
         }
         @Steps {
             @Step {
@@ -30,6 +32,8 @@
     @Section(title: "플레이어가 사용할 seat 추가하기") {
         @ContentAndMedia {
             TabletopKit interaction은 누가 table을 사용하는지 알기 위해 seat 개념을 사용합니다. 이 샘플은 single-player이므로 하나만 추가합니다.
+
+            TabletopKit은 tabletop 위의 위치를 XZ 평면의 2D pose로 다룹니다. `Point2D`가 위치를, Spatial의 `Angle2D`가 회전을 표현하고, 두 값이 함께 seat의 초기 `Pose2D`를 구성합니다.
         }
         @Steps {
             @Step {
@@ -41,7 +45,7 @@
                 @Code(name: "YachtGame.swift", file: 02-06-YachtGame-Seat.swift, previousFile: 02-03-YachtGame-Reposition.swift)
             }
             @Step {
-                이제 `ContentView.swift`로 돌아갑니다. 지금까지 만든 `TabletopGame`은 tabletop과 seat의 상태를 가지고 있지만, 아직 RealityKit scene과 연결되어 있지 않습니다. `.tabletopGame(_:parent:)`를 사용해 TabletopKit이 관리하는 entity들을 `game.root` 아래에 배치합니다.
+                이제 `ContentView.swift`로 돌아갑니다. 지금까지 만든 `TabletopGame`은 tabletop과 seat의 상태를 가지고 있지만, 아직 RealityKit scene과 연결되어 있지 않습니다. `.tabletopGame(_:parent:)`를 사용해 TabletopKit이 관리하는 entity들을 `game.root` 아래에 연결합니다. 이 modifier가 초기 구성인 `TableSetup`과 실제 3D scene 사이의 마지막 연결 지점입니다.
                 @Code(name: "ContentView.swift", file: 02-07-ContentView.swift, previousFile: 02-04-ContentView-Reposition.swift)
             }
         }
@@ -52,6 +56,8 @@
             volume 바닥에 round table이 보여야 합니다. 아직 dice는 없습니다.
 
             이제 화면에 보이는 round table은 단순한 RealityKit `Entity`가 아닙니다. `EntityTabletop`으로 TabletopKit의 좌표 기준이 되었고, `TableSetup`과 local seat까지 연결되어 플레이어와 equipment를 받을 수 있는 game board가 되었습니다.
+
+            table이 보이지 않는다면 먼저 `"table/table"` asset 경로와 `.tabletopGame(game.tabletopGame, parent: game.root)` 연결을 확인합니다.
         }
         @Steps {
             @Step {

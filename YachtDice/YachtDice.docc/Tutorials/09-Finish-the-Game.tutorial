@@ -5,51 +5,77 @@
 
     @Section(title: "보너스와 완료 상태 계산하기") {
         @ContentAndMedia {
-            Numbers bonus는 UI가 아니라 score model의 규칙입니다. 따라서 목표 점수와 보너스 값을 별도 rule로 두고 `YachtScoreSheet`가 total과 complete 상태를 계산하게 합니다.
+            Numbers bonus는 UI가 아니라 score model의 규칙입니다. 목표 점수와 보너스 값을 별도 rule로 두고, bonus 계산과 game completion을 작은 extension으로 분리합니다.
+
+            Numbers 목표인 **63점**은 `3 × (1 + 2 + 3 + 4 + 5 + 6)`이며, 이 기준을 넘으면 **35점**의 bonus를 더합니다.
         }
         @Steps {
             @Step {
-                `YachtBonusRule.swift` 파일을 새로 만듭니다. Numbers 목표와 보너스 값을 한곳에 모아 score model이 같은 규칙을 사용하게 합니다.
+                `YachtBonusRule.swift`에 Numbers 목표와 bonus 값을 정의합니다.
                 @Code(name: "YachtBonusRule.swift", file: 09-01-YachtBonusRule.swift, reset: true)
             }
             @Step {
-                이제 `YachtScoreSheet.swift`를 엽니다. Numbers subtotal, bonus, total, `isComplete`, `reset()`을 추가합니다. 이미 저장된 `entries`를 한 곳에서 집계하면 UI와 `YachtGame`이 동일한 최종 점수와 완료 상태를 사용할 수 있습니다.
-                @Code(name: "YachtScoreSheet.swift", file: 09-02-YachtScoreSheet-Complete.swift, previousFile: 08-02-YachtScoreSheet-Basic.swift)
+                Numbers subtotal과 bonus 진행 상태는 `YachtScoreSheet+Bonus.swift` extension으로 분리합니다.
+                @Code(name: "YachtScoreSheet+Bonus.swift", file: 09-02-YachtScoreSheet+Bonus.swift, reset: true)
             }
             @Step {
-                이제 `YachtGame.swift`로 이동합니다. finished 상태를 roll, Hold, score commit 조건에 반영하고 `startNewGame()`을 추가합니다.
-                @Code(name: "YachtGame.swift", file: 09-03-YachtGame-Complete.swift, previousFile: 08-03-YachtGame-RecordScore.swift)
+                `YachtScoreSheet.swift`에는 최종 total, 완료 여부, reset처럼 score sheet 전체에 해당하는 동작만 추가합니다.
+                @Code(name: "YachtScoreSheet.swift", file: 09-03-YachtScoreSheet-Complete.swift, previousFile: 08-02-YachtScoreSheet-Basic.swift)
+            }
+            @Step {
+                완료된 게임에서는 roll과 Hold를 막도록 `YachtGame+Turn.swift`를 확장합니다.
+                @Code(name: "YachtGame+Turn.swift", file: 09-04-YachtGame+Turn-Complete.swift, previousFile: 06-03-YachtGame+Turn-Hold.swift)
+            }
+            @Step {
+                score commit도 완료 상태를 확인하도록 `YachtGame+Scoring.swift`를 확장합니다.
+                @Code(name: "YachtGame+Scoring.swift", file: 09-05-YachtGame+Scoring-Complete.swift, previousFile: 08-04-YachtGame+Scoring-Record.swift)
+            }
+            @Step {
+                새 게임 시작과 Hold 정리는 `YachtGame+Completion.swift`에 모읍니다.
+                @Code(name: "YachtGame+Completion.swift", file: 09-06-YachtGame+Completion.swift, reset: true)
             }
         }
     }
 
+
     @Section(title: "완료 상태를 UI에 보여주기") {
         @ContentAndMedia {
-            보너스 진행도와 final score는 model에서 계산된 값을 읽어 표시만 합니다. UI는 규칙을 다시 계산하지 않습니다.
+            보너스 진행도와 final score는 model에서 계산된 값을 읽어 표시만 합니다. 상태별 문구와 완료 footer를 별도 View로 나누면 score sheet 본문이 짧게 유지됩니다.
         }
         @Steps {
             @Step {
-                `NumbersBonusView.swift` 파일을 새로 만듭니다. Numbers subtotal이 목표 점수에 얼마나 가까운지 보여주는 progress UI를 구성합니다.
-                @Code(name: "NumbersBonusView.swift", file: 09-04-NumbersBonusView.swift, reset: true)
+                bonus 획득/미획득/진행 중 상태는 `NumbersBonusStatusView.swift`로 분리합니다.
+                @Code(name: "NumbersBonusStatusView.swift", file: 09-07-NumbersBonusStatusView.swift, reset: true)
             }
             @Step {
-                이제 `YachtScoreSheetView.swift`를 엽니다. 기존 Numbers 영역 아래에 bonus progress를 추가합니다.
-                @Code(name: "YachtScoreSheetView.swift", file: 09-05-YachtScoreSheetView-Bonus.swift, previousFile: 08-06-YachtScoreSheetView-Basic.swift)
+                `NumbersBonusView.swift`는 label, progress bar, status view를 조합합니다.
+                @Code(name: "NumbersBonusView.swift", file: 09-08-NumbersBonusView.swift, reset: true)
             }
             @Step {
-                게임이 끝났을 때 final score와 새 게임 button을 표시하도록 완료 상태 UI를 추가합니다.
-                @Code(name: "YachtScoreSheetView.swift", file: 09-06-YachtScoreSheetView-Complete.swift, previousFile: 09-05-YachtScoreSheetView-Bonus.swift)
+                `YachtScoreSheetView.swift`의 Numbers 영역에 bonus progress를 추가합니다.
+                @Code(name: "YachtScoreSheetView.swift", file: 09-09-YachtScoreSheetView-Bonus.swift, previousFile: 08-09-YachtScoreSheetView-Basic.swift)
             }
             @Step {
-                마지막으로 `ContentView.swift`로 돌아옵니다. finished 상태와 `startNewGame()` action을 두 ornament에 전달해 최종 UI와 game state를 연결합니다.
-                @Code(name: "ContentView.swift", file: 09-07-ContentView-Complete.swift, previousFile: 08-07-ContentView-ScoreSheet.swift)
+                완료 화면은 `GameCompleteView.swift`로 분리합니다.
+                @Code(name: "GameCompleteView.swift", file: 09-10-GameCompleteView.swift, reset: true)
+            }
+            @Step {
+                score sheet가 완료되면 `GameCompleteView`를 표시하도록 `YachtScoreSheetView.swift`를 확장합니다.
+                @Code(name: "YachtScoreSheetView.swift", file: 09-11-YachtScoreSheetView-Complete.swift, previousFile: 09-09-YachtScoreSheetView-Bonus.swift)
+            }
+            @Step {
+                마지막으로 `ContentView.swift`에서 `startNewGame()` action을 연결합니다.
+                @Code(name: "ContentView.swift", file: 09-12-ContentView-Complete.swift, previousFile: 08-10-ContentView-ScoreSheet.swift)
             }
         }
     }
+
 
     @Section(title: "완성된 게임 확인하기") {
         @ContentAndMedia {
             모든 category를 채우면 `Game Complete`와 final score가 표시되고 더 이상 dice를 굴리거나 Hold할 수 없어야 합니다. `Start New Game`을 누르면 score sheet와 turn state가 모두 초기화됩니다.
+
+            이 샘플의 `startNewGame()`은 **점수표, roll count, Hold, 마지막 결과 같은 앱의 game state**를 초기화합니다. 이미 table 위에 있는 dice의 물리적인 pose를 시작 위치로 되돌리지는 않습니다.
 
             **최종 구조**: SwiftUI는 UI, RealityKit은 3D entity, TabletopKit은 tabletop interaction, `YachtGame`과 scoring 타입은 Yacht 규칙을 담당합니다.
 

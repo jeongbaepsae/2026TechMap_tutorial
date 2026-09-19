@@ -23,10 +23,9 @@ final class Die: EntityEquipment {
         let initialFace = representation.face(for: .identity)
 
         let spacing: Double = 0.06
-        let startX: Double = -0.15
         let initialPose = TableVisualState.Pose2D(
             position: .init(
-                x: startX + Double(index) * spacing,
+                x: Double(index - 3) * spacing,
                 z: 0
             ),
             rotation: .zero
@@ -48,7 +47,7 @@ final class Die: EntityEquipment {
         faceMap = cubeFaceMap
     }
 
-    func calculateScore(for state: RawValueState) -> Int {
+    func dieValue(for state: RawValueState) -> Int {
         guard let currentFace = faceType.init(rawValue: state.rawValue),
               let score = faceMap.value(for: currentFace) else {
             fatalError("Unable to read the die face")

@@ -17,8 +17,7 @@ struct YachtScoreSheetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Yacht Score Sheet")
-                .font(.headline)
+            Text("Yacht Score Sheet").font(.headline)
 
             HStack(alignment: .top, spacing: 20) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -30,7 +29,6 @@ struct YachtScoreSheetView: View {
                         canCommitScore: canCommitScore,
                         onSelectCategory: onSelectCategory
                     )
-
                     NumbersBonusView(scoreSheet: scoreSheet)
                 }
 
@@ -47,23 +45,17 @@ struct YachtScoreSheetView: View {
             }
 
             Divider()
-
             HStack {
                 Text("Total Score")
                 Spacer()
-                Text("\(scoreSheet.totalScore)")
-                    .fontWeight(.bold)
+                Text("\(scoreSheet.totalScore)").fontWeight(.bold)
             }
 
             if scoreSheet.isComplete {
-                VStack(spacing: 10) {
-                    Text("Game Complete")
-                        .font(.headline)
-                    Text("Final Score: \(scoreSheet.totalScore)")
-                        .fontWeight(.bold)
-                    Button("Start New Game", action: onStartNewGame)
-                }
-                .frame(maxWidth: .infinity)
+                GameCompleteView(
+                    finalScore: scoreSheet.totalScore,
+                    onStartNewGame: onStartNewGame
+                )
             }
         }
         .padding(20)

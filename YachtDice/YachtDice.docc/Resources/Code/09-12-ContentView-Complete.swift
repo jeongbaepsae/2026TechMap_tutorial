@@ -27,6 +27,9 @@ struct ContentView: View {
                 canCommitScore: game.canCommitScore,
                 onSelectCategory: { category in
                     game.commitScore(for: category)
+                },
+                onStartNewGame: {
+                    game.startNewGame()
                 }
             )
         }
@@ -42,7 +45,6 @@ struct ContentView: View {
                 rollCount: game.rollCount,
                 maximumRollCount: YachtGame.maximumRollCount,
                 isRolling: game.isRolling,
-                isGameFinished: false,
                 onTapDie: { game.toggleHold(at: $0) }
             )
         }

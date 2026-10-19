@@ -1,6 +1,6 @@
 @Tutorial(time: 25) {
     @Intro(title: "Yacht 점수 계산하기") {
-        이 단원은 TabletopKit이 아니라 **순수 Swift 게임 규칙**에 집중합니다. 현재 다섯 dice 결과를 입력하면 각 Yacht category에서 몇 점인지 계산하도록 만듭니다.
+        이 단원은 TabletopKit이 아니라 **순수 Swift 게임 규칙**에 집중합니다. 현재 다섯 주사위 결과를 입력하면 각 Yacht category에서 몇 점인지 계산하도록 만듭니다.
     }
 
     @Section(title: "점수 category 정의하기") {
@@ -12,7 +12,7 @@
             | Category | 계산 방식 |
             | --- | --- |
             | Ones...Sixes | 해당 숫자의 합 |
-            | Choice | 다섯 dice의 전체 합 |
+            | Choice | 다섯 주사위의 전체 합 |
             | Four of a Kind | 같은 숫자가 4개 이상이면 전체 합 |
             | Full House | 2개 + 3개 조합이면 전체 합 |
             | Small Straight | 조건을 만족하면 15점 |
@@ -21,7 +21,7 @@
         }
         @Steps {
             @Step {
-                `YachtCategory.swift` 파일을 새로 만듭니다. 12개 category, 표시 이름, Numbers의 target face를 정의합니다.
+                Xcode에서 새 Swift 파일 `YachtCategory.swift`를 만들고 점수 카테고리의 enum과 표시 이름을 정의합니다. 12개 category, 표시 이름, Numbers의 target face를 정의합니다.
                 @Code(name: "YachtCategory.swift", file: 07-01-YachtCategory.swift, reset: true)
             }
         }
@@ -29,31 +29,31 @@
 
     @Section(title: "하나의 계산기에서 모든 category 처리하기") {
         @ContentAndMedia {
-            점수 계산기는 RealityKit이나 TabletopKit state를 직접 읽지 않습니다. `[Int]` 다섯 개만 입력받기 때문에 테스트와 재사용이 쉬워집니다.
+            점수 계산기는 RealityKit이나 TabletopKit 상태를 직접 읽지 않습니다. `[Int]` 다섯 개만 입력받기 때문에 테스트와 재사용이 쉬워집니다.
         }
         @Steps {
             @Step {
-                `YachtScoreCalculator.swift` 파일을 새로 만듭니다. 먼저 Numbers와 Choice만 처리하는 최소한의 계산기를 구현합니다.
+                Xcode에서 새 Swift 파일 `YachtScoreCalculator.swift`를 만들고 Numbers와 Choice 계산을 담당하는 타입을 정의합니다. 먼저 Numbers와 Choice만 처리하는 최소한의 계산기를 구현합니다.
                 @Code(name: "YachtScoreCalculator.swift", file: 07-02-YachtScoreCalculator-Basic.swift, reset: true)
             }
             @Step {
-                먼저 frequency map을 추가해 Four of a Kind와 Full House를 처리합니다. `Dictionary`에 각 눈이 나온 횟수를 모으면 두 규칙이 **같은 빈도 데이터**를 재사용할 수 있습니다. `reduce(into:)`가 배열을 한 번 순회하며 이 dictionary를 만드는 과정도 함께 확인하세요.
+                같은 `YachtScoreCalculator.swift`의 `score(dice:category:)` 구현에 **빈도 계산과 Four of a Kind / Full House 분기를 추가**합니다. `Dictionary`에 각 눈이 나온 횟수를 모으면 두 규칙이 **같은 빈도 데이터**를 재사용할 수 있습니다. `reduce(into:)`가 배열을 한 번 순회하며 이 dictionary를 만드는 과정도 함께 확인하세요.
                 @Code(name: "YachtScoreCalculator.swift", file: 07-03-YachtScoreCalculator-Groups.swift, previousFile: 07-02-YachtScoreCalculator-Basic.swift)
             }
             @Step {
-                Straight와 Yacht처럼 **눈의 패턴**을 검사하는 helper는 `YachtScoreCalculator+Patterns.swift` extension으로 분리합니다. `Set`과 `isSubset(of:)`를 이용해 순서가 아닌 포함 관계를 검사합니다.
+                Xcode에서 새 Swift 파일 `YachtScoreCalculator+Patterns.swift`를 만들고 Straight/Yacht의 눈 패턴 판별 helper를 extension에 작성합니다. `Set`과 `isSubset(of:)`를 이용해 순서가 아닌 포함 관계를 검사합니다.
                 @Code(name: "YachtScoreCalculator+Patterns.swift", file: 07-04-YachtScoreCalculator+Patterns.swift, reset: true)
             }
             @Step {
-                `YachtScoreCalculator.swift`에서 새 pattern helper를 호출하고, 모든 category preview를 만드는 `scores(for:)`를 추가합니다.
+                `YachtScoreCalculator.swift`로 돌아가 `score(dice:category:)`의 남은 카테고리 분기를 **패턴 helper 호출로 완성**하고, 전체 예상 점수를 만드는 `scores(for:)`를 추가합니다.
                 @Code(name: "YachtScoreCalculator.swift", file: 07-05-YachtScoreCalculator-All.swift, previousFile: 07-03-YachtScoreCalculator-Groups.swift)
             }
             @Step {
-                이제 `YachtGame.swift`로 이동해 calculator를 저장합니다. 3D scene을 만드는 기본 구조는 그대로 유지합니다.
+                `YachtGame.swift`를 열어 클래스의 저장 프로퍼티에 `YachtScoreCalculator` 인스턴스를 추가합니다. 3D 장면을 만드는 기본 구조는 그대로 유지합니다.
                 @Code(name: "YachtGame.swift", file: 07-06-YachtGame-Scoring.swift, previousFile: 06-02-YachtGame-Hold.swift)
             }
             @Step {
-                현재 roll의 category preview 계산은 `YachtGame+Scoring.swift` extension으로 분리합니다.
+                Xcode에서 새 Swift 파일 `YachtGame+Scoring.swift`를 만들고 현재 주사위 결과로 카테고리별 예상 점수를 계산하는 프로퍼티를 extension에 작성합니다.
                 @Code(name: "YachtGame+Scoring.swift", file: 07-07-YachtGame+Scoring-Preview.swift, reset: true)
             }
         }
@@ -61,17 +61,17 @@
 
     @Section(title: "확인하기") {
         @ContentAndMedia {
-            계산기는 다음처럼 같은 dice 결과를 category마다 다르게 해석합니다.
+            계산기는 다음처럼 같은 주사위 결과를 category마다 다르게 해석합니다.
 
-            | Dice | 확인할 결과 |
+            | 주사위 | 확인할 결과 |
             | --- | --- |
             | `[6, 6, 6, 6, 2]` | Sixes 24, Four of a Kind 26 |
             | `[2, 2, 3, 3, 3]` | Full House 13 |
             | `[1, 2, 3, 4, 6]` | Small Straight 15 |
 
-            `YachtScoreCalculator`는 TabletopKit이나 RealityKit 타입에 의존하지 않고 `[Int]`만 받습니다. 덕분에 3D interaction에서 얻은 결과를 순수한 게임 데이터로 바꾼 뒤, 각 category의 예상 점수를 독립적으로 계산할 수 있습니다.
+            `YachtScoreCalculator`는 TabletopKit이나 RealityKit 타입에 의존하지 않고 `[Int]`만 받습니다. 덕분에 3D 인터랙션에서 얻은 결과를 순수한 게임 데이터로 바꾼 뒤, 각 category의 예상 점수를 독립적으로 계산할 수 있습니다.
 
-            현재 계산된 값은 dice 결과가 바뀔 때마다 달라지는 preview입니다. Yacht에서는 한 category를 선택하는 순간 그 값을 확정해야 하므로, 다음 단원에서는 별도의 score sheet 상태를 추가합니다.
+            현재 계산된 값은 주사위 결과가 바뀔 때마다 달라지는 미리보기입니다. Yacht에서는 한 category를 선택하는 순간 그 값을 확정해야 하므로, 다음 단원에서는 별도의 점수표 상태를 추가합니다.
         }
         @Steps {
             @Step {
@@ -90,9 +90,9 @@
                 }
             }
             @Choice(isCorrect: true) {
-                `[Int]` 형태의 dice 결과만으로 게임 규칙을 독립적으로 테스트하고 재사용할 수 있습니다.
+                `[Int]` 형태의 주사위 결과만으로 게임 규칙을 독립적으로 테스트하고 재사용할 수 있습니다.
                 @Justification(reaction: "정답입니다.") {
-                    3D interaction이나 TabletopKit session 없이도 scoring rule을 검증할 수 있습니다.
+                    3D 인터랙션이나 TabletopKit session 없이도 scoring rule을 검증할 수 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
@@ -105,13 +105,13 @@
         @MultipleChoice {
             Full House 판단에 frequency map이 유용한 이유는 무엇인가요?
             @Choice(isCorrect: false) {
-                각 die의 3D 위치를 정렬해 서로 가까운 dice를 같은 숫자로 판단할 수 있기 때문입니다.
+                각 주사위의 3D 위치를 정렬해 서로 가까운 주사위를 같은 숫자로 판단할 수 있기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
                     점수 계산에서는 공간상의 위치를 사용하지 않습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                `FaceMap`을 적용하지 않고도 cube face의 raw value를 바로 점수로 사용할 수 있기 때문입니다.
+                `FaceMap`을 적용하지 않고도 정육면체의 면의 raw value를 바로 점수로 사용할 수 있기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
                     frequency map은 이미 숫자로 변환된 결과에서 각 값의 등장 횟수를 세는 구조입니다.
                 }
@@ -126,21 +126,21 @@
         @MultipleChoice {
             현재 구현에서 `yachtScorePreviews`가 빈 dictionary를 반환하는 직접 조건은 무엇인가요?
             @Choice(isCorrect: true) {
-                `hasRolled`가 false여서 아직 다섯 dice의 유효한 결과가 준비되지 않은 경우입니다.
+                `hasRolled`가 false여서 아직 다섯 주사위의 유효한 결과가 준비되지 않은 경우입니다.
                 @Justification(reaction: "정답입니다.") {
-                    preview score는 현재 roll 결과가 있을 때만 계산합니다.
+                    미리보기 점수는 현재 굴리기 결과가 있을 때만 계산합니다.
                 }
             }
             @Choice(isCorrect: false) {
                 `rollCount`가 최대값인 3에 도달한 경우입니다.
                 @Justification(reaction: "아닙니다.") {
-                    세 번째 roll 이후에도 현재 결과가 있다면 score preview는 표시할 수 있습니다.
+                    세 번째 굴리기 이후에도 현재 결과가 있다면 점수 미리보기는 표시할 수 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                다섯 dice가 모두 Hold된 경우입니다.
+                다섯 주사위가 모두 Hold된 경우입니다.
                 @Justification(reaction: "아닙니다.") {
-                    모두 Hold되었더라도 이미 읽은 dice 결과가 있다면 score preview 자체는 계산할 수 있습니다.
+                    모두 Hold되었더라도 이미 읽은 주사위 결과가 있다면 점수 미리보기 자체는 계산할 수 있습니다.
                 }
             }
         }

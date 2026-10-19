@@ -1,41 +1,41 @@
 @Tutorial(time: 30) {
     @Intro(title: "주사위 결과를 읽고 세 번으로 제한하기") {
-        이제 toss의 raw face를 1~6 숫자로 변환하고, 한 턴에 최대 세 번만 굴릴 수 있게 합니다. 화면 아래에는 현재 다섯 결과와 roll 횟수가 표시됩니다.
+        이제 던지기의 원시 면 정보를 1~6 숫자로 변환하고, 한 턴에 최대 세 번만 굴릴 수 있게 합니다. 화면 아래에는 현재 다섯 결과와 굴리기 횟수가 표시됩니다.
     }
 
     @Section(title: "TabletopKit face를 1~6 값으로 바꾸기") {
         @ContentAndMedia {
-            toss outcome의 `rawValue`는 곧바로 Yacht의 1...6 값이 아닙니다. cube face와 실제 눈 숫자 사이의 mapping을 별도로 정의합니다.
+            던지기 outcome의 `rawValue`는 곧바로 Yacht의 1...6 값이 아닙니다. 정육면체의 면와 실제 눈 숫자 사이의 mapping을 별도로 정의합니다.
 
-            여기서 `.a ... .f`와 1...6의 대응은 튜토리얼에서 제공하는 `D6.usdz`의 orientation을 기준으로 합니다. 다른 D6 asset으로 교체한다면 model의 face orientation에 맞게 mapping도 다시 확인해야 합니다.
+            여기서 `.a ... .f`와 1...6의 대응은 튜토리얼에서 제공하는 `D6.usdz`의 orientation을 기준으로 합니다. 다른 D6 에셋으로 교체한다면 모델의 면 방향에 맞게 mapping도 다시 확인해야 합니다.
         }
         @Steps {
             @Step {
-                `FaceMappingHelpers.swift` 파일을 새로 만듭니다. cube face `.a ... .f`와 Yacht에서 사용할 1...6 값을 연결합니다.
+                Xcode에서 새 Swift 파일 `FaceMappingHelpers.swift`를 만들고 면 식별자와 1~6 눈값의 대응을 정의합니다. 정육면체의 면 `.a ... .f`와 Yacht에서 사용할 1...6 값을 연결합니다.
                 @Code(name: "FaceMappingHelpers.swift", file: 05-01-FaceMappingHelpers.swift, reset: true)
             }
             @Step {
-                이제 `Die.swift`를 엽니다. `faceMap`과 `dieValue(for:)`를 추가합니다. 이 함수는 점수를 계산하는 것이 아니라 TabletopKit의 cube face를 D6의 1...6 값으로 변환합니다. 점수 계산은 이후 `YachtScoreCalculator`가 별도로 담당합니다.
+                `Die.swift`를 열어 기존 `Die` 타입 안에 `faceMap`과 `dieValue(for:)`를 추가합니다. 이 함수는 점수를 계산하는 것이 아니라 TabletopKit의 정육면체의 면를 D6의 1...6 값으로 변환합니다. 점수 계산은 이후 `YachtScoreCalculator`가 별도로 담당합니다.
                 @Code(name: "Die.swift", file: 05-02-Die-FaceMap.swift, previousFile: 03-03-Die-FiveLayout.swift)
             }
         }
     }
 
-    @Section(title: "한 턴의 roll state 만들기") {
+    @Section(title: "한 턴의 굴리기 상태 만들기") {
         @ContentAndMedia {
-            TabletopKit은 toss 결과를 관리하지만 “한 턴에 세 번”이라는 Yacht 규칙까지 정하지는 않습니다. `YachtGame`에는 turn state를 저장하고, 그 상태를 해석하는 roll 동작은 extension으로 분리합니다.
+            TabletopKit은 던지기 결과를 관리하지만 “한 턴에 세 번”이라는 Yacht 규칙까지 정하지는 않습니다. `YachtGame`에는 턴 상태를 저장하고, 그 상태를 해석하는 굴리기 동작은 extension으로 분리합니다.
         }
         @Steps {
             @Step {
-                `YachtGame.swift`에 `lastRollResults`, `rollCount`, `isRolling`을 추가합니다. 3D scene과 game object를 만드는 기본 구조는 그대로 유지합니다.
+                `YachtGame.swift`를 열어 `YachtGame` 클래스의 저장 프로퍼티 영역에 `lastRollResults`, `rollCount`, `isRolling`을 추가합니다. 3D 장면과 게임 객체를 만드는 기본 구조는 그대로 유지합니다.
                 @Code(name: "YachtGame.swift", file: 05-03-YachtGame-RollState.swift, previousFile: 03-04-YachtGame-FiveDice.swift)
             }
             @Step {
-                roll 가능 여부, snapshot 결과 읽기, roll 종료 처리는 `YachtGame+Turn.swift` extension으로 분리합니다.
+                Xcode에서 새 Swift 파일 `YachtGame+Turn.swift`를 만들고 `extension YachtGame`에 굴리기 가능 여부, 스냅샷 읽기, 한 번의 굴리기 종료 처리를 작성합니다.
                 @Code(name: "YachtGame+Turn.swift", file: 05-04-YachtGame+Turn-Roll.swift, reset: true)
             }
             @Step {
-                `DiceInteraction+Update.swift`에서 roll 가능 여부를 확인하고 정상적인 toss가 끝났을 때 `finishRoll()`을 호출하도록 lifecycle을 확장합니다.
+                `DiceInteraction+Update.swift`를 열어 기존 제스처 처리에 **굴리기 가능 여부 검사와 `finishRoll()` 호출을 추가**합니다. 세 번째 굴리기 이후에는 새로운 던지기를 시작하지 않도록 합니다.
                 @Code(name: "DiceInteraction+Update.swift", file: 05-05-DiceInteraction+Update-RollState.swift, previousFile: 04-04-DiceInteraction+Update-Five.swift)
             }
         }
@@ -44,15 +44,15 @@
 
     @Section(title: "결과를 화면에서 확인하기") {
         @ContentAndMedia {
-            3D entity의 상태는 `YachtGame`에 저장하고, SwiftUI는 그 상태를 읽어 UI만 표시합니다.
+            3D 엔티티의 상태는 `YachtGame`에 저장하고, SwiftUI는 그 상태를 읽어 UI만 표시합니다.
         }
         @Steps {
             @Step {
-                `DiceResultsView.swift` 파일을 새로 만듭니다. 다섯 결과, 합계, 현재 roll 횟수를 표시합니다.
+                Xcode에서 새 Swift 파일 `DiceResultsView.swift`를 만들고 다섯 눈값, 합계, 현재 굴리기 횟수를 표시하는 SwiftUI 뷰를 작성합니다. 다섯 결과, 합계, 현재 굴리기 횟수를 표시합니다.
                 @Code(name: "DiceResultsView.swift", file: 05-06-DiceResultsView.swift, reset: true)
             }
             @Step {
-                마지막으로 `ContentView.swift`를 엽니다. 앞쪽 ornament에 결과 view를 연결해 3D table과 같은 volume에서 turn 정보를 확인할 수 있게 합니다.
+                `ContentView.swift`를 열어 기존 테이블 뷰에 **앞쪽 ornament를 추가**하고 `DiceResultsView`를 연결합니다. 3D 테이블을 유지하면서 현재 턴의 결과를 함께 표시합니다.
                 @Code(name: "ContentView.swift", file: 05-07-ContentView-Results.swift, previousFile: 04-02-ContentView-TabletopInteraction.swift)
             }
         }
@@ -60,20 +60,20 @@
 
     @Section(title: "실행해서 확인하기") {
         @ContentAndMedia {
-            toss할 때마다 1~6 값 다섯 개와 `Roll 1 / 3`, `Roll 2 / 3`, `Roll 3 / 3`이 표시되어야 합니다. 세 번째 이후에는 새로운 toss가 시작되지 않습니다.
+            던질 때마다 1~6 값 다섯 개와 `Roll 1 / 3`, `Roll 2 / 3`, `Roll 3 / 3`이 표시되어야 합니다. 세 번째 이후에는 새로운 던지기가 시작되지 않습니다.
 
-            toss가 끝나면 흐름은 `TabletopGame` snapshot → `Die.faceMap` → `YachtGame.lastRollResults` 순서로 이어집니다. 여기에 `rollCount`를 함께 저장함으로써 TabletopKit의 물리 결과를 Yacht의 “한 턴에 최대 세 번” 규칙으로 변환합니다.
+            던지기가 끝나면 흐름은 `TabletopGame` 스냅샷 → `Die.faceMap` → `YachtGame.lastRollResults` 순서로 이어집니다. 여기에 `rollCount`를 함께 저장함으로써 TabletopKit의 물리 결과를 Yacht의 “한 턴에 최대 세 번” 규칙으로 변환합니다.
 
-            현재는 매 roll마다 다섯 dice가 모두 toss 대상입니다. 다음 단원에서는 Hold 상태를 추가해 이 turn state를 기준으로 다음 toss에 참여할 equipment를 선택합니다.
+            현재는 매 굴리기마다 다섯 주사위가 모두 던지기 대상입니다. 다음 단원에서는 Hold 상태를 추가해 이 턴 상태를 기준으로 다음 던지기에 참여할 장비를 선택합니다.
 
-            화면의 숫자가 실제 D6 윗면과 다르게 나온다면 먼저 `cubeFaceMap`이 현재 사용하는 D6 asset의 orientation과 일치하는지 확인합니다.
+            화면의 숫자가 실제 D6 윗면과 다르게 나온다면 먼저 `cubeFaceMap`이 현재 사용하는 D6 에셋의 orientation과 일치하는지 확인합니다.
         }
         @Steps {
             @Step {
-                dice를 세 번 굴려 1~6 결과와 roll 횟수가 갱신되고, 세 번째 이후에는 새 toss가 시작되지 않는지 확인합니다.
+                주사위를 세 번 굴립니다. 정상이라면 각 굴리기 후 다섯 눈값과 합계가 바뀌고 `Roll 1 / 3`부터 `Roll 3 / 3`까지 올라갑니다. 세 번째 이후에는 추가 굴리기가 시작되지 않아야 합니다.
                 @Image(
                     source: "5_Section 4_Step 1.png",
-                    alt: "Dice 결과 view에 Roll 3 / 3과 다섯 개의 1~6 값, Total 20이 표시되어 있습니다."
+                    alt: "주사위 결과 패널에 Roll 3 / 3, 다섯 눈값과 Total 20이 표시된 화면입니다."
                 )
             }
         }
@@ -83,57 +83,57 @@
         @MultipleChoice {
             `FaceMap`이 필요한 이유는 무엇인가요?
             @Choice(isCorrect: false) {
-                D6 mesh의 각 면에 다른 texture를 배치하기 위한 UV mapping 정보를 제공하기 때문입니다.
+                D6 mesh의 각 면에 다른 텍스처를 배치하기 위한 UV mapping 정보를 제공하기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    `FaceMap`은 material이나 UV가 아니라 논리적인 toss face와 게임 값을 연결합니다.
+                    `FaceMap`은 material이나 UV가 아니라 논리적인 던지기 face와 게임 값을 연결합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                `TabletopGame` snapshot이 매 roll의 결과를 자동으로 `[Int]`로 저장하게 만들기 때문입니다.
+                `TabletopGame` 스냅샷이 매 굴리기의 결과를 자동으로 `[Int]`로 저장하게 만들기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    snapshot은 equipment state를 제공하고, 숫자 값으로 변환하는 과정은 직접 구현합니다.
+                    스냅샷은 장비 상태를 제공하고, 숫자 값으로 변환하는 과정은 직접 구현합니다.
                 }
             }
             @Choice(isCorrect: true) {
-                toss simulation의 논리적인 cube face를 Yacht에서 사용할 1~6 값으로 변환하기 위해서입니다.
+                던지기 시뮬레이션의 논리적인 정육면체의 면를 Yacht에서 사용할 1~6 값으로 변환하기 위해서입니다.
                 @Justification(reaction: "정답입니다.") {
                     shape의 face와 게임 규칙의 숫자 값을 분리하면 같은 representation도 다른 값 규칙을 적용할 수 있습니다.
                 }
             }
         }
         @MultipleChoice {
-            현재 dice 결과를 읽을 때 사용하는 것은 무엇인가요?
+            현재 주사위 결과를 읽을 때 사용하는 것은 무엇인가요?
             @Choice(isCorrect: false) {
-                `GeometryReader3D`가 반환한 volume의 현재 frame입니다.
+                `GeometryReader3D`가 반환한 볼륨의 현재 frame입니다.
                 @Justification(reaction: "아닙니다.") {
-                    geometry frame은 table 위치를 volume에 맞추는 데 사용합니다.
+                    geometry frame은 테이블 위치를 볼륨에 맞추는 데 사용합니다.
                 }
             }
             @Choice(isCorrect: true) {
-                `TabletopGame`의 current snapshot에서 각 die의 equipment state를 읽습니다.
+                `TabletopGame`의 current 스냅샷에서 각 주사위의 장비 상태를 읽습니다.
                 @Justification(reaction: "맞아요.") {
-                    snapshot의 `state(for:)`와 `Die.dieValue(for:)`를 조합해 현재 face 값을 얻습니다.
+                    스냅샷의 `state(for:)`와 `Die.dieValue(for:)`를 조합해 현재 face 값을 얻습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                gesture가 끝났을 때 전달된 drag velocity를 1~6 범위로 변환합니다.
+                제스처가 끝났을 때 전달된 drag velocity를 1~6 범위로 변환합니다.
                 @Justification(reaction: "아닙니다.") {
-                    속도는 toss 결과 숫자를 직접 결정하는 값으로 사용하지 않습니다.
+                    속도는 던지기 결과 숫자를 직접 결정하는 값으로 사용하지 않습니다.
                 }
             }
         }
         @MultipleChoice {
             최대 세 번이라는 규칙을 TabletopKit이 아닌 `YachtGame`에 두는 이유는 무엇인가요?
             @Choice(isCorrect: true) {
-                세 번 제한은 TabletopKit의 공통 interaction 규칙이 아니라 Yacht가 정의한 게임 규칙이기 때문입니다.
+                세 번 제한은 TabletopKit의 공통 인터랙션 규칙이 아니라 Yacht가 정의한 게임 규칙이기 때문입니다.
                 @Justification(reaction: "정답입니다.") {
-                    framework가 제공하는 toss 기능과 앱의 turn rule을 분리하면 역할이 명확해집니다.
+                    framework가 제공하는 던지기 기능과 앱의 턴 rule을 분리하면 역할이 명확해집니다.
                 }
             }
             @Choice(isCorrect: false) {
-                TabletopKit은 한 session에서 toss 횟수를 한 번만 처리할 수 있기 때문입니다.
+                TabletopKit은 한 session에서 던지기 횟수를 한 번만 처리할 수 있기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    TabletopKit은 여러 interaction을 처리할 수 있으며 세 번 제한은 이 게임의 정책입니다.
+                    TabletopKit은 여러 인터랙션을 처리할 수 있으며 세 번 제한은 이 게임의 정책입니다.
                 }
             }
             @Choice(isCorrect: false) {

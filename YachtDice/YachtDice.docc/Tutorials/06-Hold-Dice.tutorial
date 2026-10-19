@@ -1,52 +1,52 @@
 @Tutorial(time: 25) {
     @Intro(title: "원하는 주사위를 Hold하기") {
-        Yacht의 핵심인 Hold를 추가합니다. 결과 UI에서 dice를 선택하면 해당 dice가 고정되고, 다음 toss에는 선택하지 않은 dice만 참여합니다.
+        Yacht의 핵심인 Hold를 추가합니다. 결과 UI에서 주사위를 선택하면 해당 주사위가 고정되고, 다음 던지기에는 선택하지 않은 주사위만 참여합니다.
     }
 
     @Section(title: "Hold 상태를 ID로 관리하기") {
         @ContentAndMedia {
-            화면 index가 아니라 `EquipmentIdentifier`를 저장하면 interaction과 같은 기준으로 dice를 추적할 수 있습니다. Hold 표시와 turn rule도 각각 별도 extension에 두어 기존 `Die`와 `YachtGame`의 기본 구조가 지나치게 길어지지 않게 합니다.
+            화면 index가 아니라 `EquipmentIdentifier`를 저장하면 인터랙션과 같은 기준으로 주사위를 추적할 수 있습니다. Hold 표시와 턴 rule도 각각 별도 extension에 두어 기존 `Die`와 `YachtGame`의 기본 구조가 지나치게 길어지지 않게 합니다.
         }
         @Steps {
             @Step {
-                Hold 표시만 담당하는 `Die+HoldAppearance.swift` extension을 만듭니다. 제공된 D6의 `PhysicallyBasedMaterial` tint를 바꾸되 equipment와 face 로직은 기존 `Die.swift`에 그대로 둡니다.
+                Xcode에서 새 Swift 파일 `Die+HoldAppearance.swift`를 만들고 Hold 상태에 따른 색상 변경 메서드를 `extension Die`에 작성합니다. 제공된 D6의 `PhysicallyBasedMaterial` tint를 바꾸되 장비와 face 로직은 기존 `Die.swift`에 그대로 둡니다.
                 @Code(name: "Die+HoldAppearance.swift", file: 06-01-Die+HoldAppearance.swift, reset: true)
             }
             @Step {
-                `YachtGame.swift`에는 Hold 상태를 저장할 `heldDieIDs`만 추가합니다.
+                `YachtGame.swift`를 열어 게임 상태를 보관하는 클래스 내부에 `heldDieIDs` 저장 프로퍼티를 추가합니다.
                 @Code(name: "YachtGame.swift", file: 06-02-YachtGame-Hold.swift, previousFile: 05-03-YachtGame-RollState.swift)
             }
             @Step {
-                `YachtGame+Turn.swift`를 확장해 `rollableDice`, Hold 여부, toggle rule을 한 곳에서 관리합니다.
+                `YachtGame+Turn.swift`를 열어 기존 턴 처리 extension에 `rollableDice`, Hold 여부 확인과 전환 로직을 추가합니다.
                 @Code(name: "YachtGame+Turn.swift", file: 06-03-YachtGame+Turn-Hold.swift, previousFile: 05-04-YachtGame+Turn-Roll.swift)
             }
         }
     }
 
 
-    @Section(title: "Hold된 dice를 toss에서 제외하기") {
+    @Section(title: "Hold된 주사위를 던지기에서 제외하기") {
         @ContentAndMedia {
-            Hold 상태는 게임 데이터에만 있으면 부족합니다. 실제 interaction에서는 `rollableDice`만 대상으로 삼고, 결과 UI는 한 개의 die button과 전체 panel의 책임을 나눠 표시합니다.
+            Hold 상태는 게임 데이터에만 있으면 부족합니다. 실제 인터랙션에서는 `rollableDice`만 대상으로 삼고, 결과 UI는 한 개의 주사위 button과 전체 panel의 책임을 나눠 표시합니다.
         }
         @Steps {
             @Step {
-                `DiceInteraction.swift`의 초기화에서는 `game.rollableDice`만 toss 대상으로 선택합니다.
+                `DiceInteraction.swift`를 열어 인터랙션 초기화 시 전체 주사위를 고르던 부분을 **`game.rollableDice`에서 선택하는 코드로 교체**합니다.
                 @Code(name: "DiceInteraction.swift", file: 06-04-DiceInteraction-Hold.swift, previousFile: 04-03-DiceInteraction-Five.swift)
             }
             @Step {
-                `DiceInteraction+Update.swift`에서는 Hold된 die를 직접 잡은 경우 interaction을 취소하도록 lifecycle rule을 추가합니다.
+                `DiceInteraction+Update.swift`를 열어 기존 제스처 처리에 **Hold된 주사위를 직접 조작하면 취소하는 조건을 추가**합니다.
                 @Code(name: "DiceInteraction+Update.swift", file: 06-05-DiceInteraction+Update-Hold.swift, previousFile: 05-05-DiceInteraction+Update-RollState.swift)
             }
             @Step {
-                한 개의 결과 button은 `DieResultButton.swift`로 분리합니다. 숫자, Hold badge, 선택 가능 여부를 이 View가 담당합니다.
+                Xcode에서 새 Swift 파일 `DieResultButton.swift`를 만들고 주사위 하나의 눈값과 Hold 상태·선택 동작을 표시하는 SwiftUI 버튼을 작성합니다. 숫자, Hold badge, 선택 가능 여부를 이 뷰가 담당합니다.
                 @Code(name: "DieResultButton.swift", file: 06-06-DieResultButton.swift, reset: true)
             }
             @Step {
-                `DiceResultsView.swift`는 다섯 개의 `DieResultButton`과 roll/total 정보만 조합하도록 단순화합니다.
+                `DiceResultsView.swift`를 열어 기존 눈값 표시 부분을 **다섯 개의 `DieResultButton`을 사용하는 구성으로 교체**합니다. 굴리기 횟수와 총합은 그대로 표시합니다.
                 @Code(name: "DiceResultsView.swift", file: 06-07-DiceResultsView-Hold.swift, previousFile: 05-06-DiceResultsView.swift)
             }
             @Step {
-                마지막으로 `ContentView.swift`에서 held index와 tap action을 결과 UI에 전달합니다.
+                `ContentView.swift`를 열어 기존 `DiceResultsView` 호출에 **Hold된 주사위 인덱스와 탭 동작 인자를 추가**합니다.
                 @Code(name: "ContentView.swift", file: 06-06-ContentView-Hold.swift, previousFile: 05-07-ContentView-Results.swift)
             }
         }
@@ -55,20 +55,20 @@
 
     @Section(title: "실행해서 확인하기") {
         @ContentAndMedia {
-            한 번 굴린 뒤 결과 panel에서 일부 dice를 선택하세요. 선택된 dice는 색과 lock badge가 바뀌고, 다음 toss에서는 제자리에 남아야 합니다.
+            한 번 굴린 뒤 결과 panel에서 일부 주사위를 선택하세요. 선택된 주사위는 색과 lock badge가 바뀌고, 다음 던지기에서는 제자리에 남아야 합니다.
 
-            Hold를 선택하면 같은 상태가 UI와 interaction 양쪽에 사용됩니다. UI는 선택된 die를 lock 상태로 표시하고, `DiceInteraction`은 `rollableDice`만 다음 toss 묶음에 포함하므로 화면 표시와 실제 게임 동작이 어긋나지 않습니다.
+            Hold를 선택하면 같은 상태가 UI와 인터랙션 양쪽에 사용됩니다. UI는 선택된 주사위를 lock 상태로 표시하고, `DiceInteraction`은 `rollableDice`만 다음 던지기 묶음에 포함하므로 화면 표시와 실제 게임 동작이 어긋나지 않습니다.
 
-            세 번째 roll 이후에는 더 이상 다음 toss가 없으므로 Hold 선택도 변경하지 않습니다.
+            세 번째 굴리기 이후에는 더 이상 다음 던지기가 없으므로 Hold 선택도 변경하지 않습니다.
 
-            `setHeldAppearance`는 제공된 D6의 `PhysicallyBasedMaterial`을 기준으로 색을 바꾸는 helper입니다. 다른 material이나 custom shader를 사용하는 model로 교체한다면 Hold 표시 방식도 그 material 구조에 맞게 조정해야 합니다.
+            `setHeldAppearance`는 제공된 D6의 `PhysicallyBasedMaterial`을 기준으로 색을 바꾸는 helper입니다. 다른 material이나 custom shader를 사용하는 모델로 교체한다면 Hold 표시 방식도 그 material 구조에 맞게 조정해야 합니다.
         }
         @Steps {
             @Step {
-                첫 roll 뒤 일부 dice를 Hold한 다음 다시 toss해, 선택한 dice만 제자리에 남는지 확인합니다.
+                첫 굴리기 후 주사위 일부를 Hold하고 다시 굴립니다. 정상이라면 Hold 표시가 바뀌고, 선택한 주사위는 움직이지 않으며 나머지만 다시 굴러갑니다.
                 @Image(
                     source: "6_Section 3_Step 1.png",
-                    alt: "결과 패널에서 세 개의 dice가 파란색과 lock 배지로 Hold 표시되어 있고, 3D table 위의 해당 dice도 같은 파란색으로 강조되어 있습니다."
+                    alt: "결과 패널에서 주사위 세 개가 잠금 표시와 파란색으로 Hold되어 있고, 3D 테이블의 해당 주사위도 강조된 모습입니다."
                 )
             }
         }
@@ -78,61 +78,61 @@
         @MultipleChoice {
             Hold 상태를 `EquipmentIdentifier`로 저장하는 장점은 무엇인가요?
             @Choice(isCorrect: true) {
-                TabletopKit interaction이 사용하는 것과 같은 identity로 Hold된 die를 추적할 수 있습니다.
+                TabletopKit 인터랙션이 사용하는 것과 같은 identity로 Hold된 주사위를 추적할 수 있습니다.
                 @Justification(reaction: "정답입니다.") {
-                    화면상의 index와 실제 equipment identity를 분리하면서도 같은 die를 안정적으로 찾을 수 있습니다.
+                    화면상의 index와 실제 장비 identity를 분리하면서도 같은 주사위를 안정적으로 찾을 수 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                Hold된 die의 material을 TabletopKit이 자동으로 파란색으로 바꿔 줍니다.
+                Hold된 주사위의 material을 TabletopKit이 자동으로 파란색으로 바꿔 줍니다.
                 @Justification(reaction: "아닙니다.") {
                     시각적인 색 변경은 `setHeldAppearance`에서 직접 처리합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                Hold 상태를 저장하면 dice의 pose가 snapshot에서 제거되어 더 이상 움직일 수 없게 됩니다.
+                Hold 상태를 저장하면 주사위의 pose가 스냅샷에서 제거되어 더 이상 움직일 수 없게 됩니다.
                 @Justification(reaction: "아닙니다.") {
-                    Hold는 앱의 선택 상태이며 equipment state 자체를 snapshot에서 제거하지 않습니다.
+                    Hold는 앱의 선택 상태이며 장비 상태 자체를 스냅샷에서 제거하지 않습니다.
                 }
             }
         }
         @MultipleChoice {
-            `rollableDice`에는 어떤 dice가 들어가나요?
+            `rollableDice`에는 어떤 주사위가 들어가나요?
             @Choice(isCorrect: false) {
-                마지막 roll에서 결과 값이 바뀐 dice만 들어갑니다.
+                마지막 굴리기에서 결과 값이 바뀐 주사위만 들어갑니다.
                 @Justification(reaction: "아닙니다.") {
-                    이전 결과 변화 여부가 아니라 Hold 여부로 다음 toss 대상을 결정합니다.
+                    이전 결과 변화 여부가 아니라 Hold 여부로 다음 던지기 대상을 결정합니다.
                 }
             }
             @Choice(isCorrect: false) {
-                현재 Hold된 dice만 들어갑니다.
+                현재 Hold된 주사위만 들어갑니다.
                 @Justification(reaction: "반대입니다.") {
-                    Hold된 dice는 다음 roll에서 유지되어야 하므로 toss 대상에서 제외합니다.
+                    Hold된 주사위는 다음 굴리기에서 유지되어야 하므로 던지기 대상에서 제외합니다.
                 }
             }
             @Choice(isCorrect: true) {
-                현재 Hold되지 않아 다음 toss에 다시 굴릴 수 있는 dice만 들어갑니다.
+                현재 Hold되지 않아 다음 던지기에 다시 굴릴 수 있는 주사위만 들어갑니다.
                 @Justification(reaction: "맞아요.") {
-                    `rollableDice`가 grouped toss에 포함될 equipment 목록이 됩니다.
+                    `rollableDice`가 grouped 던지기에 포함될 장비 목록이 됩니다.
                 }
             }
         }
         @MultipleChoice {
             Hold를 UI 상태로만 저장하면 부족한 가장 중요한 이유는 무엇인가요?
             @Choice(isCorrect: false) {
-                SwiftUI view가 다시 그려질 때 모든 local UI state가 반드시 삭제되기 때문입니다.
+                SwiftUI 뷰가 다시 그려질 때 모든 local UI 상태가 반드시 삭제되기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
-                    SwiftUI도 상태를 유지할 수 있지만, 핵심은 UI와 interaction이 같은 게임 상태를 공유해야 한다는 점입니다.
+                    SwiftUI도 상태를 유지할 수 있지만, 핵심은 UI와 인터랙션이 같은 게임 상태를 공유해야 한다는 점입니다.
                 }
             }
             @Choice(isCorrect: true) {
-                실제 `TabletopInteraction`의 다음 toss 대상에서도 Hold된 dice를 제외해야 하기 때문입니다.
+                실제 `TabletopInteraction`의 다음 던지기 대상에서도 Hold된 주사위를 제외해야 하기 때문입니다.
                 @Justification(reaction: "정답입니다.") {
-                    선택 표시만 바뀌고 toss 로직이 같은 dice를 다시 굴린다면 Hold 규칙이 성립하지 않습니다.
+                    선택 표시만 바뀌고 던지기 로직이 같은 주사위를 다시 굴린다면 Hold 규칙이 성립하지 않습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                `EquipmentIdentifier`는 SwiftUI View 안에서는 접근할 수 없는 타입이기 때문입니다.
+                `EquipmentIdentifier`는 SwiftUI 뷰 안에서는 접근할 수 없는 타입이기 때문입니다.
                 @Justification(reaction: "아닙니다.") {
                     접근 자체의 제약이 아니라 상태의 책임과 일관성 문제입니다.
                 }

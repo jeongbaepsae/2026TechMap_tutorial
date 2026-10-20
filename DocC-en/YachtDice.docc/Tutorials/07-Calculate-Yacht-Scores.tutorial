@@ -75,7 +75,11 @@
         }
         @Steps {
             @Step {
-                Compare the three examples above with the input to `YachtScoreCalculator.score(dice:category:)` and check what value each rule returns. For example, passing `[2, 2, 3, 3, 3]` with `.fullHouse` should give 13, and passing `[1, 2, 3, 4, 6]` with `.smallStraight` should give 15.
+                Compare the three examples above with the input to `YachtScoreCalculator.score(dice:category:)` and check what value each rule returns. For example, passing `[2, 2, 3, 3, 3]` with `.fullHouse` should give 13, and passing `[1, 2, 3, 4, 6]` with `.smallStraight` should give 15. The image on the right shows the expected scores for `[6, 6, 6, 6, 2]` on the score sheet you build in the next chapter.
+                @Image(
+                    source: "7_Section 3_Step 1.png",
+                    alt: "The score sheet showing the expected scores for the dice result [6, 6, 6, 6, 2]: Sixes 24, Choice 26, and Four of a Kind 26. The dice panel below shows four sixes and one two, with a total of 26."
+                )
             }
         }
     }

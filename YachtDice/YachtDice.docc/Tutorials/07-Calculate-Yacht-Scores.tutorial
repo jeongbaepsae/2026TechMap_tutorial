@@ -75,7 +75,11 @@
         }
         @Steps {
             @Step {
-                위 세 가지 예시를 `YachtScoreCalculator.score(dice:category:)`의 입력과 비교하며 각 규칙이 어떤 값을 반환하는지 확인합니다. 예를 들어 `[2, 2, 3, 3, 3]`을 `.fullHouse`에 전달하면 13, `[1, 2, 3, 4, 6]`을 `.smallStraight`에 전달하면 15가 되어야 합니다.
+                위 세 가지 예시를 `YachtScoreCalculator.score(dice:category:)`의 입력과 비교하며 각 규칙이 어떤 값을 반환하는지 확인합니다. 예를 들어 `[2, 2, 3, 3, 3]`을 `.fullHouse`에 전달하면 13, `[1, 2, 3, 4, 6]`을 `.smallStraight`에 전달하면 15가 되어야 합니다. 오른쪽 이미지는 다음 단원에서 만들 점수표에 `[6, 6, 6, 6, 2]`의 예상 점수가 표시된 모습입니다.
+                @Image(
+                    source: "7_Section 3_Step 1.png",
+                    alt: "주사위 결과 [6, 6, 6, 6, 2]의 예상 점수가 표시된 점수표입니다. Sixes 24, Choice 26, Four of a Kind 26이 보이고, 아래 주사위 패널에는 여섯 개의 눈이 네 번과 두 개의 눈이 한 번, 합계 26이 표시되어 있습니다."
+                )
             }
         }
     }

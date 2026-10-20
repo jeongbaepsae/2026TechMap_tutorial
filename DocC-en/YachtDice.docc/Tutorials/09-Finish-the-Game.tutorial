@@ -1,0 +1,158 @@
+@Tutorial(time: 20) {
+    @Intro(title: "Finish the Numbers Bonus and the End of the Game") {
+        Finally, you calculate the Numbers section's bonus and the state where every category is complete. Once every score is recorded, the final score and a new game button appear.
+    }
+
+    @Section(title: "Calculate the Bonus and the Completion State") {
+        @ContentAndMedia {
+            The Numbers bonus is a rule of the score model, not of the UI. You keep the target score and the bonus value as a separate rule, and split the bonus calculation and game completion into small extensions.
+
+            The Numbers target of **63 points** is `3 × (1 + 2 + 3 + 4 + 5 + 6)`, and once you reach it, a **35-point** bonus is added.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `YachtBonusRule.swift` and define the Numbers bonus's target score and bonus score.
+                @Code(name: "YachtBonusRule.swift", file: 09-01-YachtBonusRule.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreSheet+Bonus.swift` and write the extension that calculates the Numbers subtotal and the bonus progress state.
+                @Code(name: "YachtScoreSheet+Bonus.swift", file: 09-02-YachtScoreSheet+Bonus.swift, reset: true)
+            }
+            @Step {
+                Open `YachtScoreSheet.swift` and **add the total score, the completion check, and the logic that resets the records** to the existing record data structure.
+                @Code(name: "YachtScoreSheet.swift", file: 09-03-YachtScoreSheet-Complete.swift, previousFile: 08-02-YachtScoreSheet-Basic.swift)
+            }
+            @Step {
+                Open `YachtGame+Turn.swift` and **add a branch that checks the game's completion state** to the existing conditions for rolling and Hold.
+                @Code(name: "YachtGame+Turn.swift", file: 09-04-YachtGame+Turn-Complete.swift, previousFile: 06-03-YachtGame+Turn-Hold.swift)
+            }
+            @Step {
+                Open `YachtGame+Scoring.swift` and **add a check for whether the game is complete** to the existing method that locks in a score.
+                @Code(name: "YachtGame+Scoring.swift", file: 09-05-YachtGame+Scoring-Complete.swift, previousFile: 08-04-YachtGame+Scoring-Record.swift)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtGame+Completion.swift` and write the method that resets the score sheet, the turn, and the Hold state when you start a new game.
+                @Code(name: "YachtGame+Completion.swift", file: 09-06-YachtGame+Completion.swift, reset: true)
+            }
+        }
+    }
+
+    @Section(title: "Show the Completion State in the UI") {
+        @ContentAndMedia {
+            The bonus progress and the final score are values calculated in the model; the UI only reads and displays them. Splitting the per-state text and the completion footer into separate views keeps the score sheet body short.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `NumbersBonusStatusView.swift` and write the view that shows the bonus states: earned, not earned, and in progress.
+                @Code(name: "NumbersBonusStatusView.swift", file: 09-07-NumbersBonusStatusView.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `NumbersBonusView.swift` and assemble the progress bar and the bonus status view.
+                @Code(name: "NumbersBonusView.swift", file: 09-08-NumbersBonusView.swift, reset: true)
+            }
+            @Step {
+                Open `YachtScoreSheetView.swift` and **add the bonus progress bar** to the existing Numbers section.
+                @Code(name: "YachtScoreSheetView.swift", file: 09-09-YachtScoreSheetView-Bonus.swift, previousFile: 08-09-YachtScoreSheetView-Basic.swift)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `GameCompleteView.swift` and write the completion screen that shows the final score and the `Start New Game` button.
+                @Code(name: "GameCompleteView.swift", file: 09-10-GameCompleteView.swift, reset: true)
+            }
+            @Step {
+                Open `YachtScoreSheetView.swift` and **add a statement below the existing score sheet that shows `GameCompleteView` when the completion condition is met**.
+                @Code(name: "YachtScoreSheetView.swift", file: 09-11-YachtScoreSheetView-Complete.swift, previousFile: 09-09-YachtScoreSheetView-Bonus.swift)
+            }
+            @Step {
+                Open `ContentView.swift` and **connect a `game.startNewGame()` call** to the completion screen's `Start New Game` action.
+                @Code(name: "ContentView.swift", file: 09-12-ContentView-Complete.swift, previousFile: 08-10-ContentView-ScoreSheet.swift)
+            }
+        }
+    }
+
+    @Section(title: "Verify the Finished Game") {
+        @ContentAndMedia {
+            Once you fill every category, `Game Complete` and the final score appear, and you should no longer be able to roll or Hold the dice. Pressing `Start New Game` resets both the score sheet and the turn state.
+
+            In this sample, `startNewGame()` resets **the app's game state — the score sheet, the roll count, Hold, and the last results**. It doesn't move the dice already on the table back to their starting positions.
+
+            **Final structure**: SwiftUI handles the UI, RealityKit handles the 3D entities, TabletopKit handles the tabletop interaction, and `YachtGame` and the scoring types handle the Yacht rules.
+
+            RealityKit and TabletopKit handle the 3D state of the table and dice, while `YachtGame` and the scoring model handle the rules of a turn and the score state. The heart of the finished structure is that each layer is responsible for its own state and is connected only where it needs to be.
+        }
+        @Steps {
+            @Step {
+                Record every category. If everything is working, the final score, `Game Complete`, and `Start New Game` should appear. When you start a new game, the score sheet, the turn, and the Hold state are reset. It's normal in this sample that the dice stay where they are in 3D.
+                @Image(
+                    source: "9_Section 3_Step 1.png",
+                    alt: "Below the score sheet with all 12 categories recorded, Game Complete, Final Score 120, and a Start New Game button are shown."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Why do you put the Numbers bonus calculation in `YachtScoreSheet` rather than in `NumbersBonusView`?
+            @Choice(isCorrect: true) {
+                Because the bonus is a game rule that must always produce the same result regardless of how it's displayed.
+                @Justification(reaction: "Correct.") {
+                    Keeping the bonus rule in the model keeps the scoring result identical even if the UI changes.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because you can't use `Int` operations or comparisons in `NumbersBonusView`.
+                @Justification(reaction: "Not quite.") {
+                    You can calculate in a SwiftUI view too, but you put it in the model to separate responsibilities.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because TabletopKit can only store properties inside `YachtScoreSheet` in its snapshot.
+                @Justification(reaction: "Not quite.") {
+                    The Yacht score sheet is the app's game logic; it has nothing to do with TabletopKit's snapshot storage rules.
+                }
+            }
+        }
+        @MultipleChoice {
+            Once `isGameFinished` becomes true, what's the most appropriate combination of actions to block?
+            @Choice(isCorrect: false) {
+                Stop showing the score sheet, the final score, and the new game button altogether.
+                @Justification(reaction: "Not quite.") {
+                    You should keep showing the completed result and let the user start a new game.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Block actions that change the finished game state, such as a new roll, a Hold change, and an additional score commit.
+                @Justification(reaction: "That's right.") {
+                    After the game ends, show the result but don't change the existing score state any further.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Stop only the RealityKit table and dice rendering, and keep allowing the scoring interaction.
+                @Justification(reaction: "Not quite.") {
+                    The goal isn't to stop rendering; the point is to prevent changes to the finished game's logical state.
+                }
+            }
+        }
+        @MultipleChoice {
+            What's the most appropriate combination of state to reset together when starting a new game?
+            @Choice(isCorrect: false) {
+                Reload the `RealityKitContent` package and the D6 USDZ, and delete the existing asset files.
+                @Justification(reaction: "Not quite.") {
+                    Asset resources have nothing to do with game state, so there's no need to recreate them.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Reset only `rollCount` to 0 and keep the existing Hold and score sheet for the next game.
+                @Justification(reaction: "Not quite.") {
+                    If the previous game's selections and records remain, it isn't a new game state.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Reset the state that belongs to the previous game together: the score sheet, the roll count, the Hold state, and the last dice results.
+                @Justification(reaction: "Correct.") {
+                    A new game must start from an initial state where no previous scores or turn state remain.
+                }
+            }
+        }
+    }
+}

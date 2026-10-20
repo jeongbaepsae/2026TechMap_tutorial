@@ -1,0 +1,138 @@
+@Tutorial(time: 20) {
+    @Intro(title: "Build the Tabletop and the Player Seat") {
+        In this chapter, you turn the visible RealityKit table into an `EntityTabletop` and connect it to a `TabletopGame`. At the end, you register the seat that the local player will use.
+    }
+
+    @Section(title: "Turn the 3D Table into a TabletopKit Tabletop") {
+        @ContentAndMedia {
+            `EntityTabletop` adds an **ID and a tabletop shape** that TabletopKit understands to a RealityKit entity. `RoundTabletop` loads the `table.usda` you placed in `RealityKitContent.rkassets/table/` earlier through the `"table/table"` path, using the same table as both a visual object and the logical game board.
+
+            In this chapter you use three roles that look similar, so keep them apart. `TableSetup` defines the **initial configuration** of the tabletop, seats, and equipment to use when the game starts, and `TabletopGame` manages the **running game state** based on that configuration. Finally, SwiftUI's `.tabletopGame(_:parent:)` modifier connects the `TabletopGame` to the RealityKit scene.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `RoundTabletop.swift` and write the `EntityTabletop` implementation. Pass `"table/table"` and `realityKitContentBundle` to `Entity.load(named:in:)` to load the table asset, and define the ID and the round shape in the same type.
+                @Code(name: "RoundTabletop.swift", file: 02-01-RoundTabletop.swift, reset: true)
+            }
+            @Step {
+                Open `YachtGame.swift` and add a `tabletopGame` property and the `TableSetup` initialization code to the existing `YachtGame` class. Once you register `RoundTabletop` in `TableSetup`, TabletopKit recognizes this entity as the tabletop that later equipment poses and interactions are based on.
+                @Code(name: "YachtGame.swift", file: 02-02-YachtGame-Tabletop.swift, previousFile: 01-03-YachtGame-Root.swift)
+            }
+            @Step {
+                Inside the same `YachtGame.swift` class, add a `repositionTable(content:proxy:)` method. You use this method to align the table with the floor of the volume.
+                @Code(name: "YachtGame.swift", file: 02-03-YachtGame-Reposition.swift, previousFile: 02-02-YachtGame-Tabletop.swift)
+            }
+            @Step {
+                Open `ContentView.swift`, wrap the existing `RealityView` in a `GeometryReader3D`, and change the `RealityView`'s make and update closures to call `game.repositionTable(...)`. This refreshes the table's position even when the volume size changes.
+                @Code(name: "ContentView.swift", file: 02-04-ContentView-Reposition.swift, previousFile: 01-05-ContentView-RealityView.swift)
+            }
+        }
+    }
+
+    @Section(title: "Add a Seat for the Player") {
+        @ContentAndMedia {
+            TabletopKit interaction uses the concept of a seat to know who is using the table. This sample is single-player, so you add just one.
+
+            TabletopKit treats a position on the tabletop as a 2D pose on the XZ plane. `Point2D` expresses the position and Spatial's `Angle2D` expresses the rotation, and together the two values make up the seat's initial `Pose2D`.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `PlayerSeat.swift` and define a type that adopts `TableSeat`. Define the `TableSeat` ID and its initial pose to prepare the position that the local player will use. `Angle2D`, used for rotation, is a Spatial type, so this file also adds `internal import Spatial`.
+                @Code(name: "PlayerSeat.swift", file: 02-05-PlayerSeat.swift, reset: true)
+            }
+            @Step {
+                Go back to `YachtGame.swift`, add the seat registration to the initialization code that creates the existing `TableSetup`, and call `claimAnySeat()` so the local player takes that seat.
+                @Code(name: "YachtGame.swift", file: 02-06-YachtGame-Seat.swift, previousFile: 02-03-YachtGame-Reposition.swift)
+            }
+            @Step {
+                Go back to `ContentView.swift` and add the `.tabletopGame(game.tabletopGame, parent: game.root)` modifier to the view wrapped by `GeometryReader3D`. The `TabletopGame` you've built so far holds the state of the tabletop and seat, but it isn't connected to the RealityKit scene yet. Use `.tabletopGame(_:parent:)` to attach the entities that TabletopKit manages under `game.root`. This modifier is the final connection point between the initial configuration, `TableSetup`, and the actual 3D scene.
+                @Code(name: "ContentView.swift", file: 02-07-ContentView.swift, previousFile: 02-04-ContentView-Reposition.swift)
+            }
+        }
+    }
+
+    @Section(title: "Run and Verify") {
+        @ContentAndMedia {
+            A round table should appear on the floor of the volume. There are no dice yet.
+
+            The round table you see now is no longer just a RealityKit `Entity`. With `EntityTabletop`, it has become TabletopKit's coordinate reference — a game board connected to `TableSetup` and the local player's seat that can receive players and equipment.
+
+            If you can't see the table, first check the `"table/table"` asset path and the `.tabletopGame(game.tabletopGame, parent: game.root)` connection.
+        }
+        @Steps {
+            @Step {
+                Run the app in the Simulator. If everything is working, you should see a single round table on the floor of the volume and no dice yet. If the table doesn't appear, check the asset path and the `.tabletopGame` connection.
+                @Image(
+                    source: "2_Section 3_Step 1.png",
+                    alt: "A normal run in the visionOS Simulator showing a single round table and no dice."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            What does `EntityTabletop` provide to a RealityKit `Entity` in addition?
+            @Choice(isCorrect: false) {
+                It automatically creates a collision shape and a physics body for the RealityKit entity.
+                @Justification(reaction: "Not quite.") {
+                    The core role of `EntityTabletop` is to connect the identification info and the tabletop shape that TabletopKit uses.
+                }
+            }
+            @Choice(isCorrect: false) {
+                It creates a layout anchor so that SwiftUI ornaments follow the table.
+                @Justification(reaction: "Not quite.") {
+                    Ornament placement is handled separately in the SwiftUI view hierarchy.
+                }
+            }
+            @Choice(isCorrect: true) {
+                It provides the ID and the tabletop shape for use in TabletopKit.
+                @Justification(reaction: "Correct.") {
+                    It connects the visual RealityKit entity to the logical tabletop that TabletopKit understands.
+                }
+            }
+        }
+        @MultipleChoice {
+            What is the role of `TableSetup`?
+            @Choice(isCorrect: true) {
+                It defines the initial configuration of the tabletop, seats, and equipment to use when starting the game.
+                @Justification(reaction: "Right.") {
+                    `TableSetup` gathers the initial layout of the game board before you create the `TabletopGame`.
+                }
+            }
+            @Choice(isCorrect: false) {
+                A runtime state snapshot that holds each equipment's current pose every frame.
+                @Justification(reaction: "Not quite.") {
+                    To read the current state, you use a `TabletopGame` snapshot.
+                }
+            }
+            @Choice(isCorrect: false) {
+                It adds entities directly to the `RealityView` and manages rendering order.
+                @Justification(reaction: "Not quite.") {
+                    Connecting the RealityKit scene happens through `RealityView` and the `.tabletopGame` modifier.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why do you call `claimAnySeat()` in a single-player sample?
+            @Choice(isCorrect: false) {
+                To pin the tabletop entity to the floor of the volume.
+                @Justification(reaction: "Not quite.") {
+                    The table's position is set by moving the RealityKit root in `repositionTable`.
+                }
+            }
+            @Choice(isCorrect: true) {
+                To connect the local player so that it uses one of the registered seats.
+                @Justification(reaction: "Correct.") {
+                    It lets TabletopKit know in which player and seat context to handle interactions.
+                }
+            }
+            @Choice(isCorrect: false) {
+                To preload the table and dice assets into memory before interaction.
+                @Justification(reaction: "Not quite.") {
+                    Claiming a seat and loading RealityKit assets are separate processes.
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,130 @@
+@Tutorial(time: 25) {
+    @Intro(title: "Toss All Five Dice Together") {
+        In this chapter, you connect `TabletopInteraction`. First you toss only the die the user picks up, then extend it by bundling the other four into the same interaction so that all five roll together, like in Yacht.
+    }
+
+    @Section(title: "Connect the SwiftUI View to TabletopInteraction") {
+        @ContentAndMedia {
+            In chapter 2, you connected the RealityView and the `TabletopGame` with the `.tabletopGame` modifier. This time, you add an interaction closure to the same modifier so that the user's spatial gestures are delivered to `DiceInteraction`.
+
+            An interaction proceeds in this order: **pick up equipment → create the interaction → update the pose while moving → release → request `interaction.toss(...)` → compute the final result → update the snapshot**. In this flow, `DiceInteraction` bridges the gesture and the TabletopKit toss.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `DiceInteraction.swift` and write the `TabletopInteraction` implementation. Implement the basic flow of the interaction: find the die the user manipulated, then request `interaction.toss` when the gesture ends.
+                @Code(name: "DiceInteraction.swift", file: 04-01-DiceInteraction-One.swift, reset: true)
+            }
+            @Step {
+                Open `ContentView.swift` and replace the `.tabletopGame(game.tabletopGame, parent: game.root)` call you added in chapter 2 with the version that has a closure creating `DiceInteraction`. Now, when the user manipulates equipment, `DiceInteraction` is created and handles the spatial gesture as a TabletopKit interaction.
+                @Code(name: "ContentView.swift", file: 04-02-ContentView-TabletopInteraction.swift, previousFile: 02-07-ContentView.swift)
+            }
+        }
+    }
+
+    @Section(title: "Toss Five Dice with One Gesture") {
+        @ContentAndMedia {
+            Split the die the user picked up directly into `controlledDie` and the remaining dice that move with it into `extraDiceToToss`. Once the interaction grows to five dice, it's easy for the lifecycle and the result handling to pile up in one file, so you read **state and initialization**, **gesture updates**, and **applying the toss outcome** separately.
+        }
+        @Steps {
+            @Step {
+                Open `DiceInteraction.swift` again and **replace the implementation that handled a single die with one that manages the state and initialization of five dice**. The gesture and toss handling methods move to the next two Swift files. Based on the die the user grabbed, it finds the remaining dice that move along with it.
+                @Code(name: "DiceInteraction.swift", file: 04-03-DiceInteraction-Five.swift, previousFile: 04-01-DiceInteraction-One.swift)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `DiceInteraction+Update.swift`. Inside this file's `extension DiceInteraction`, write the methods that update positions for each gesture phase and request the toss.
+                @Code(name: "DiceInteraction+Update.swift", file: 04-04-DiceInteraction+Update-Five.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `DiceInteraction+TossOutcome.swift`. In this extension, write the method that applies the final rotation and position from the toss simulation to the equipment state.
+                @Code(name: "DiceInteraction+TossOutcome.swift", file: 04-05-DiceInteraction+TossOutcome.swift, reset: true)
+            }
+        }
+    }
+
+    @Section(title: "Run and Verify") {
+        @ContentAndMedia {
+            If you pick up one of the five dice, move it, and release it, all five should be tossed together. At this point, you don't show the 1–6 results on screen yet.
+
+            From this point on, the dice's poses are no longer just fixed initial values — they're updated by `TabletopInteraction`. The die the user grabs directly becomes the reference for the interaction, and the other four are bound to it, move together, and then each gets its own toss result.
+
+            When the toss ends, TabletopKit leaves each die's final face in the snapshot. This value isn't yet Yacht's 1–6 number, so the next chapter interprets it as a game result through face mapping.
+
+            If the dice are visible but you can't pick them up, check that the local player's seat has been claimed and that the interaction closure of `.tabletopGame` is connected in the current `ContentView`.
+        }
+        @Steps {
+            @Step {
+                In the app, pick up one die, move it, and release it. If everything is working, all five dice move together based on the die you grabbed, and when you release, each rolls into a different pose. The UI for the pip numbers isn't shown yet.
+                @Image(
+                    source: "4_Section 3_Step 1.png",
+                    alt: "After the five D6 dice are tossed, each lies at a different position and orientation."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Which die is `controlledDie`?
+            @Choice(isCorrect: false) {
+                The die that is always first in the `game.dice` array.
+                @Justification(reaction: "Not quite.") {
+                    It's determined by the equipment ID where the user started the interaction, not by array order.
+                }
+            }
+            @Choice(isCorrect: true) {
+                The die the user picked up directly to start the current interaction.
+                @Justification(reaction: "Correct.") {
+                    You find that die with `initialInteractionValue.controlledEquipmentID`.
+                }
+            }
+            @Choice(isCorrect: false) {
+                A virtual parent equipment that represents all the dice in a single toss.
+                @Justification(reaction: "Not quite.") {
+                    `controlledDie` is a real single `Die`, and the other dice are temporarily grouped under it.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why do you call `interaction.toss` after the gesture ends?
+            @Choice(isCorrect: true) {
+                To ask TabletopKit to run the toss simulation and compute the final result from the moment the user lets go.
+                @Justification(reaction: "Right.") {
+                    You use the end of the gesture as the actual start of the toss.
+                }
+            }
+            @Choice(isCorrect: false) {
+                To end SwiftUI's gesture animation and redraw the view hierarchy.
+                @Justification(reaction: "Not quite.") {
+                    `interaction.toss` is a TabletopKit interaction API, not a SwiftUI animation API.
+                }
+            }
+            @Choice(isCorrect: false) {
+                To replace the `EquipmentIdentifier` of the die the user manipulated with a new ID for the roll.
+                @Justification(reaction: "Not quite.") {
+                    A die's identity is preserved before and after the toss.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why do you move the extra dice back to being children of the table after the toss?
+            @Choice(isCorrect: false) {
+                To reapply a new face map to each die before the next toss.
+                @Justification(reaction: "Not quite.") {
+                    The face map is a rule the die keeps, and has nothing to do with reparenting.
+                }
+            }
+            @Choice(isCorrect: false) {
+                To change the equipment ID to a sub-value of the table ID every time a toss ends.
+                @Justification(reaction: "Not quite.") {
+                    You aren't changing the ID; you're restoring the parent coordinate system.
+                }
+            }
+            @Choice(isCorrect: true) {
+                To restore, relative to the tabletop, the coordinate system you temporarily grouped under the die the user manipulated during the interaction.
+                @Justification(reaction: "Correct.") {
+                    Grouping is a temporary state for moving together, and the toss result is kept as equipment relative to the table again.
+                }
+            }
+        }
+    }
+}

@@ -2,6 +2,8 @@
     @Intro(title: "TabletopKit으로 Yacht Dice 만들기") {
         RealityKit의 테이블과 주사위를 TabletopKit의 tabletop·장비로 연결하고, 사용자의 던지기 결과를 Yacht의 턴과 점수 상태로 이어 봅니다. 마지막에는 원하는 주사위를 고정하고 점수를 기록하며 한 판을 완료합니다. 아래 화면이 이 튜토리얼에서 완성할 Yacht Dice의 모습입니다.
 
+        **Languages:** [English](https://jeongbaepsae.github.io/2026TechMap_tutorial/en/tutorials/yacht-dice-with-tabletopkit/) | 한국어
+
         @Image(source: "9_Section 3_Step 1.png", alt: "완성된 Yacht Dice 앱의 테이블, 다섯 주사위, 점수표와 Game Complete 화면입니다.")
     }
 

@@ -1,0 +1,220 @@
+@Tutorial(time: 20, projectFiles: "YachtDice-TutorialResources.zip") {
+    @Intro(title: "Prepare the Yacht Dice Project and 3D Assets") {
+        When you finish, you can roll five dice on the table, hold the ones you want, and fill in the score sheet. First, create a visionOS project in Xcode and prepare the 3D assets and the volume that the game needs.
+
+        @Image(source: "9_Section 3_Step 1.png", alt: "A screenshot of the finished Yacht Dice, showing five dice, the score sheet, and Game Complete.")
+    }
+
+    @Section(title: "Create a visionOS Project in Xcode") {
+        @ContentAndMedia {
+            Yacht Dice lays out the table and dice along the depth axis, so you start with a `Volume` scene from the beginning. The Xcode visionOS App template sets up a SwiftUI scene, a `RealityView`, and the `RealityKitContent` package for Reality Composer Pro in the same project.
+        }
+        @Steps {
+            @Step {
+                Choose `Create New Project…` on the Xcode start screen. If a project is already open, you can choose `File > New > Project…` from the menu instead.
+                @Image(
+                    source: "1_Section 1_Step 1.png",
+                    alt: "The Create New Project… button on the Xcode start screen is highlighted."
+                )
+            }
+            @Step {
+                On the next screen, choose the `visionOS > App` template.
+                @Image(
+                    source: "1_Section 1_Step 2.png",
+                    alt: "The visionOS and App buttons on the Xcode template chooser are highlighted."
+                )
+            }
+            @Step {
+                Set the Product Name to `YachtDice` and choose `Volume` as the Initial Scene. This tutorial doesn't use a separate Immersive Space.
+                @Image(
+                    source: "1_Section 1_Step 3.png",
+                    alt: "The Xcode project options screen with Product Name set to YachtDice, Initial Scene set to Volume, and Immersive Space Renderer set to None, all highlighted."
+                )
+            }
+            @Step {
+                On the project creation screen, confirm that Reality Composer Pro content is included, then create the project. In the Project Navigator, check that `YachtDiceApp.swift`, `ContentView.swift`, and `Packages/RealityKitContent` were created.
+                @Image(
+                    source: "1_Section 1_Step 4.png",
+                    alt: "The Xcode Project Navigator showing where YachtDiceApp.swift, ContentView.swift, and the RealityKitContent package are."
+                )
+            }
+        }
+    }
+
+    @Section(title: "Prepare the Table and D6 Assets") {
+        @ContentAndMedia {
+            This tutorial focuses on TabletopKit's structure and interaction, so it provides the table and D6 assets instead of asking you to model them yourself. Download `YachtDice-TutorialResources.zip` from this page to get the `dice` and `table` folders.
+
+            Copy both folders into the `RealityKitContent.rkassets` folder that Xcode created. The `table` folder also contains the textures that `table.usda` references, so keep the whole folder intact. Later, your Swift code loads these assets by name directly through `realityKitContentBundle`, so there's no need to place the D6 in a separate `Scene.usda` ahead of time.
+
+            The actual location where you put the assets is `Packages > RealityKitContent > Sources > RealityKitContent > RealityKitContent.rkassets`. From here on, this path is simply called `RealityKitContent.rkassets`.
+        }
+        @Steps {
+            @Step {
+                Download `YachtDice-TutorialResources.zip` from the top of this page and unzip it.
+                @Image(
+                    source: "1_Section 2_Step 2.png",
+                    alt: "The Project Files download button at the top of the tutorial page is highlighted."
+                )
+            }
+            @Step {
+                In the Project Navigator, expand `Packages/RealityKitContent` and find the location of `Sources/RealityKitContent/RealityKitContent.rkassets`.
+
+                @Image(
+                    source: "1_Section 2_Step 1.png",
+                    alt: "The Xcode Project Navigator showing where the RealityKitContent package and the Package.realitycomposerpro file are."
+                )
+            }
+            @Step {
+                Copy the `dice` and `table` folders from the unzipped files into `RealityKitContent.rkassets`. Because `table.usda` references its textures by relative path, move the entire `table` folder as it is.
+                @Image(
+                    source: "1_Section 2_Step 3.png",
+                    alt: "The dice and table asset folders added to RealityKitContent.rkassets in the Xcode Project Navigator."
+                )
+            }
+            @Step {
+                Open `Packages/RealityKitContent/Package.realitycomposerpro` and check that the assets you added are visible in Reality Composer Pro. Also confirm that the final paths in the Project Navigator are `RealityKitContent.rkassets/table/table.usda` and `RealityKitContent.rkassets/dice/D6.usdz`. Later code loads the assets under the names `"table/table"` and `"dice/D6"`.
+
+                `realityKitContentBundle` points to the resource bundle of the `RealityKitContent` package that Xcode generated, and you use it to load assets inside `.rkassets` by name.
+
+                @Image(
+                    source: "1_Section 2_Step 4.png",
+                    alt: "Checking the D6.usdz and table.usda asset files in the Xcode Project Navigator."
+                )
+            }
+        }
+    }
+
+    @Section(title: "Inspect the Starting Structure of the Volume") {
+        @ContentAndMedia {
+            Like an ordinary SwiftUI scene, the volume template's `WindowGroup` shows `ContentView`, and `.windowStyle(.volumetric)` gives it a space with depth. You don't put the 3D assets you prepared on screen yet; first you connect this space to the game's root entity.
+        }
+        @Steps {
+            @Step {
+                Open the `YachtDiceApp.swift` that Xcode generated. You don't modify any code here; just check that `ContentView` is connected to the `WindowGroup` and that `.windowStyle(.volumetric)` is set.
+                @Code(name: "YachtDiceApp.swift", file: 01-01-YachtDiceApp-Basic.swift, reset: true)
+            }
+            @Step {
+                In `YachtDiceApp.swift`, add `.defaultSize(width:height:depth:in:)` right below `.windowStyle(.volumetric)` in the `WindowGroup`. This sets the volume's initial width, height, and depth to 1m each for holding the table and dice; it doesn't change the unit of the 3D coordinate system.
+                @Code(name: "YachtDiceApp.swift", file: 01-02-YachtDiceApp-Volume.swift, previousFile: 01-01-YachtDiceApp-Basic.swift)
+            }
+            @Step {
+                Open `ContentView.swift` and look at the default `RealityView` that Xcode created. Don't modify it yet. The part that loads the current `Scene` asset and the `Enlarge RealityView Content` button are replaced with the game's root entity in the next section.
+                @Code(
+                      name: "ContentView.swift", file: 01-00-ContentView-Template.swift, reset: true
+                      ) {
+                            @Image(
+                                source: "1_Section 3_Step 3.png",
+                                alt: "The running Xcode Volume template, showing the Enlarge RealityView Content button and the default 3D scene."
+                            )
+                        }
+            }
+        }
+    }
+
+    @Section(title: "Connect the Game's RealityKit Root") {
+        @ContentAndMedia {
+            SwiftUI owns the volume's lifecycle and UI, while RealityKit manages the 3D entities inside it. To treat the table and dice as a single scene, you have `YachtGame` own a common parent entity.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `YachtGame.swift` and declare the `YachtGame` class and its `root` property. `root` is the starting point of the RealityKit entity hierarchy that the table and dice will attach to.
+
+                `YachtGame` later manages game state shared across several views, such as rolling, Hold, and scoring. Declaring it with `@Observable` lets SwiftUI observe changes to this object's state.
+
+                @Code(name: "YachtGame.swift", file: 01-03-YachtGame-Root.swift, reset: true)
+            }
+            @Step {
+                Go back to `YachtDiceApp.swift`, add a `@State private var game` property inside the App type, and connect `.environment(game)` to the existing `ContentView()`. `@State` keeps a single `YachtGame` instance alive and passes it to child views through the environment. That way, `ContentView`, the result UI added later, and the score sheet all use the same game state.
+                @Code(name: "YachtDiceApp.swift", file: 01-04-YachtDiceApp-Environment.swift, previousFile: 01-02-YachtDiceApp-Volume.swift)
+            }
+            @Step {
+                Go back to `ContentView.swift` and **replace the template's `RealityView` content and enlarge button with a game `RealityView`**. Declare `@Environment(YachtGame.self)` at the top of the file, and in the `RealityView`, add `game.root` instead of the demo `Scene`. All 3D content you create from now on is managed under this root.
+                @Code(name: "ContentView.swift", file: 01-05-ContentView-RealityView.swift, previousFile: 01-00-ContentView-Template.swift)
+            }
+        }
+    }
+
+    @Section(title: "Run and Verify") {
+        @ContentAndMedia {
+            When you run the app, a 1m³ volume opens. You haven't added the table or dice to `root` yet, so an empty space is expected.
+
+            In the current structure, SwiftUI creates the volume and `YachtGame.root` becomes the common parent of the RealityKit content. In the next chapter, you add the actual table entity to this root and register the same entity as TabletopKit's tabletop.
+        }
+        @Steps {
+            @Step {
+                Run the app in the Simulator. If everything is working, the 1m × 1m × 1m volume window should be empty, and neither the template's default 3D object nor the `Enlarge RealityView Content` button should appear. The table and dice haven't been added yet, so it's normal that they don't appear.
+                @Image(
+                    source: "1_Section 5_Step 1.png",
+                    alt: "A normal run in the visionOS Simulator, with an empty 1m × 1m × 1m volume window open."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Why do you choose `Volume` as the Initial Scene?
+            @Choice(isCorrect: false) {
+                Because the USDZ assets in the `RealityKitContent` package can only be loaded in a volume.
+                @Justification(reaction: "Think again.") {
+                    Using RealityKit assets isn't limited to a volume.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Because you need a 3D space in which to lay out the table and dice along the depth axis.
+                @Justification(reaction: "Correct.") {
+                    Yacht Dice's RealityKit content is placed at coordinates with real depth inside a volumetric window.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because TabletopKit always requires a 1m³ scene.
+                @Justification(reaction: "Not quite.") {
+                    1m³ is the initial volume size this tutorial chose; it isn't a fixed TabletopKit requirement.
+                }
+            }
+        }
+        @MultipleChoice {
+            What is the role of `YachtGame.root`?
+            @Choice(isCorrect: false) {
+                A snapshot that stores the state of the `TableSetup`'s tabletop, seat, and equipment.
+                @Justification(reaction: "Not quite.") {
+                    TabletopKit's state is managed by `TabletopGame` and its snapshots; `root` is a RealityKit entity.
+                }
+            }
+            @Choice(isCorrect: false) {
+                A delegate that converts the user's gestures into a `TabletopInteraction`.
+                @Justification(reaction: "Not quite.") {
+                    Connecting gestures to interactions is handled later by the `.tabletopGame` modifier and `DiceInteraction`.
+                }
+            }
+            @Choice(isCorrect: true) {
+                A common parent that manages the game's 3D content under a single RealityKit entity hierarchy.
+                @Justification(reaction: "That's right.") {
+                    Later, the table and dice attach to the same RealityKit scene through this root.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why don't you need to place the D6 in `Scene.usda` ahead of time?
+            @Choice(isCorrect: true) {
+                Because the `dice/D6` asset is loaded directly by name from `realityKitContentBundle`.
+                @Justification(reaction: "Correct.") {
+                    Assets in `RealityKitContent.rkassets` can be loaded directly from the package's resources.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because `TossableRepresentation.cube` automatically creates the visible D6 mesh as well.
+                @Justification(reaction: "Not quite.") {
+                    `TossableRepresentation` is the logical shape used for the toss simulation; the visible mesh is loaded separately.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because visionOS automatically converts the `die.face.*` SF Symbols into 3D models.
+                @Justification(reaction: "Not quite.") {
+                    SF Symbols can be used in the UI later, but they don't replace the 3D D6 model.
+                }
+            }
+        }
+    }
+}

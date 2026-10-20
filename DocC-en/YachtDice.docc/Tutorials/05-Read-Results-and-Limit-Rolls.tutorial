@@ -1,0 +1,146 @@
+@Tutorial(time: 30) {
+    @Intro(title: "Read the Dice Results and Limit Rolls to Three") {
+        Now you convert the toss's raw face information into a 1–6 value, and limit each turn to at most three rolls. The bottom of the screen shows the current five results and the roll count.
+    }
+
+    @Section(title: "Convert TabletopKit Faces to 1–6 Values") {
+        @ContentAndMedia {
+            A toss outcome's `rawValue` isn't a Yacht 1...6 value on its own. You define a separate mapping between the cube's faces and the actual number of pips.
+
+            Here, the correspondence between `.a ... .f` and 1...6 is based on the orientation of the `D6.usdz` provided with the tutorial. If you swap in a different D6 asset, check the mapping again against that model's face orientation.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `FaceMappingHelpers.swift` and define the correspondence between face identifiers and the 1–6 pip values. Connect the cube faces `.a ... .f` to the 1...6 values that Yacht uses.
+                @Code(name: "FaceMappingHelpers.swift", file: 05-01-FaceMappingHelpers.swift, reset: true)
+            }
+            @Step {
+                Open `Die.swift` and add `faceMap` and `dieValue(for:)` to the existing `Die` type. This function doesn't calculate a score; it converts TabletopKit's cube face into the D6's 1...6 value. Calculating the score is handled separately later by `YachtScoreCalculator`.
+                @Code(name: "Die.swift", file: 05-02-Die-FaceMap.swift, previousFile: 03-03-Die-FiveLayout.swift)
+            }
+        }
+    }
+
+    @Section(title: "Create the Roll State for a Turn") {
+        @ContentAndMedia {
+            TabletopKit manages toss results, but it doesn't decide Yacht's rule of "three rolls per turn." You store the turn state in `YachtGame`, and separate the rolling behavior that interprets that state into an extension.
+        }
+        @Steps {
+            @Step {
+                Open `YachtGame.swift` and add `lastRollResults`, `rollCount`, and `isRolling` to the stored-properties area of the `YachtGame` class. The basic structure that creates the 3D scene and the game object stays as it is.
+                @Code(name: "YachtGame.swift", file: 05-03-YachtGame-RollState.swift, previousFile: 03-04-YachtGame-FiveDice.swift)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtGame+Turn.swift` and write, in an `extension YachtGame`, whether a roll can start, reading the snapshot, and handling the end of a single roll.
+                @Code(name: "YachtGame+Turn.swift", file: 05-04-YachtGame+Turn-Roll.swift, reset: true)
+            }
+            @Step {
+                Open `DiceInteraction+Update.swift` and **add a check for whether a roll can start, plus a call to `finishRoll()`,** to the existing gesture handling. After the third roll, a new toss should not start.
+                @Code(name: "DiceInteraction+Update.swift", file: 05-05-DiceInteraction+Update-RollState.swift, previousFile: 04-04-DiceInteraction+Update-Five.swift)
+            }
+        }
+    }
+
+    @Section(title: "Show the Results on Screen") {
+        @ContentAndMedia {
+            You store the 3D entities' state in `YachtGame`, and SwiftUI only reads that state to display the UI.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `DiceResultsView.swift` and write a SwiftUI view that shows the five pip values, the total, and the current roll count. It shows the five results, the total, and the current roll count.
+                @Code(name: "DiceResultsView.swift", file: 05-06-DiceResultsView.swift, reset: true)
+            }
+            @Step {
+                Open `ContentView.swift`, **add a front ornament** to the existing table view, and connect `DiceResultsView`. This keeps the 3D table while also showing the current turn's results.
+                @Code(name: "ContentView.swift", file: 05-07-ContentView-Results.swift, previousFile: 04-02-ContentView-TabletopInteraction.swift)
+            }
+        }
+    }
+
+    @Section(title: "Run and Verify") {
+        @ContentAndMedia {
+            Each time you toss, five values from 1–6 and `Roll 1 / 3`, `Roll 2 / 3`, `Roll 3 / 3` should appear. After the third roll, no new toss should start.
+
+            When a toss ends, the flow runs in this order: `TabletopGame` snapshot → `Die.faceMap` → `YachtGame.lastRollResults`. By storing `rollCount` alongside it, you convert TabletopKit's physics result into Yacht's rule of "at most three rolls per turn."
+
+            For now, all five dice are toss targets on every roll. In the next chapter, you add a Hold state and use this turn state to choose which equipment takes part in the next toss.
+
+            If the number on screen differs from the top face of the actual D6, first check that `cubeFaceMap` matches the orientation of the D6 asset you're using.
+        }
+        @Steps {
+            @Step {
+                Roll the dice three times. If everything is working, the five pip values and the total change after each roll, and the count goes from `Roll 1 / 3` up to `Roll 3 / 3`. After the third roll, no further roll should start.
+                @Image(
+                    source: "5_Section 4_Step 1.png",
+                    alt: "The dice result panel shows Roll 3 / 3, five pip values, and a Total of 20."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Why is a `FaceMap` needed?
+            @Choice(isCorrect: false) {
+                Because it provides the UV mapping information for placing a different texture on each face of the D6 mesh.
+                @Justification(reaction: "Not quite.") {
+                    `FaceMap` connects the logical toss face to the game value — it isn't about materials or UVs.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because it makes the `TabletopGame` snapshot automatically store each roll's result as an `[Int]`.
+                @Justification(reaction: "Not quite.") {
+                    The snapshot provides equipment state; you implement the conversion into number values yourself.
+                }
+            }
+            @Choice(isCorrect: true) {
+                To convert the toss simulation's logical cube face into the 1–6 value that Yacht uses.
+                @Justification(reaction: "Correct.") {
+                    Separating the shape's face from the game rule's number lets the same representation apply different value rules.
+                }
+            }
+        }
+        @MultipleChoice {
+            What do you use to read the current dice results?
+            @Choice(isCorrect: false) {
+                The current frame of the volume returned by `GeometryReader3D`.
+                @Justification(reaction: "Not quite.") {
+                    The geometry frame is used to align the table's position to the volume.
+                }
+            }
+            @Choice(isCorrect: true) {
+                You read each die's equipment state from the `TabletopGame`'s current snapshot.
+                @Justification(reaction: "That's right.") {
+                    Combining the snapshot's `state(for:)` with `Die.dieValue(for:)` gives you the current face value.
+                }
+            }
+            @Choice(isCorrect: false) {
+                You convert the drag velocity delivered when the gesture ended into a 1–6 range.
+                @Justification(reaction: "Not quite.") {
+                    Velocity isn't used to directly determine the toss result number.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why do you put the three-roll maximum in `YachtGame` rather than in TabletopKit?
+            @Choice(isCorrect: true) {
+                Because the three-roll limit isn't a common TabletopKit interaction rule; it's a game rule defined by Yacht.
+                @Justification(reaction: "Correct.") {
+                    Separating the toss feature the framework provides from the app's turn rules makes the responsibilities clear.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because TabletopKit can only handle one toss count per session.
+                @Justification(reaction: "Not quite.") {
+                    TabletopKit can handle multiple interactions, and the three-roll limit is this game's policy.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because state of a type like `Int`, such as `rollCount`, can't be stored in `TabletopGame`.
+                @Justification(reaction: "Not quite.") {
+                    It isn't a type constraint; it's a design that separates the game's responsibilities.
+                }
+            }
+        }
+    }
+}

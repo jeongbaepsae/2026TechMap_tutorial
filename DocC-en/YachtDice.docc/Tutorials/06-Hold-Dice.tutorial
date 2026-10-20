@@ -1,0 +1,140 @@
+@Tutorial(time: 25) {
+    @Intro(title: "Hold the Dice You Want") {
+        You add Hold, the heart of Yacht. When you select dice in the result UI, those dice are locked, and only the dice you didn't select take part in the next toss.
+    }
+
+    @Section(title: "Manage Hold State by ID") {
+        @ContentAndMedia {
+            If you store the `EquipmentIdentifier` instead of the on-screen index, you can track dice by the same criterion that the interaction uses. The Hold appearance and the turn rules also go into their own extensions, so the basic structure of the existing `Die` and `YachtGame` doesn't grow too long.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `Die+HoldAppearance.swift` and write the method that changes color based on Hold state in an `extension Die`. It changes the tint of the provided D6's `PhysicallyBasedMaterial`, while the equipment and face logic stay in the existing `Die.swift`.
+                @Code(name: "Die+HoldAppearance.swift", file: 06-01-Die+HoldAppearance.swift, reset: true)
+            }
+            @Step {
+                Open `YachtGame.swift` and add the `heldDieIDs` stored property inside the class that holds the game state.
+                @Code(name: "YachtGame.swift", file: 06-02-YachtGame-Hold.swift, previousFile: 05-03-YachtGame-RollState.swift)
+            }
+            @Step {
+                Open `YachtGame+Turn.swift` and add `rollableDice` and the logic for checking and toggling Hold to the existing turn-handling extension.
+                @Code(name: "YachtGame+Turn.swift", file: 06-03-YachtGame+Turn-Hold.swift, previousFile: 05-04-YachtGame+Turn-Roll.swift)
+            }
+        }
+    }
+
+    @Section(title: "Exclude Held Dice from the Toss") {
+        @ContentAndMedia {
+            Hold state living only in the game data isn't enough. In the actual interaction, you target only `rollableDice`, and the result UI splits responsibility between a single die button and the whole panel.
+        }
+        @Steps {
+            @Step {
+                Open `DiceInteraction.swift` and **replace the code that picked all the dice when the interaction was initialized with code that picks from `game.rollableDice`**.
+                @Code(name: "DiceInteraction.swift", file: 06-04-DiceInteraction-Hold.swift, previousFile: 04-03-DiceInteraction-Five.swift)
+            }
+            @Step {
+                Open `DiceInteraction+Update.swift` and **add a condition to the existing gesture handling that cancels the interaction when the user directly manipulates a held die**.
+                @Code(name: "DiceInteraction+Update.swift", file: 06-05-DiceInteraction+Update-Hold.swift, previousFile: 05-05-DiceInteraction+Update-RollState.swift)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `DieResultButton.swift` and write a SwiftUI button that shows one die's pip value along with its Hold state and selection action. This view is responsible for the number, the Hold badge, and whether the die can be selected.
+                @Code(name: "DieResultButton.swift", file: 06-06-DieResultButton.swift, reset: true)
+            }
+            @Step {
+                Open `DiceResultsView.swift` and **replace the part that showed the pip values with a composition that uses five `DieResultButton`s**. The roll count and the total are still shown as before.
+                @Code(name: "DiceResultsView.swift", file: 06-07-DiceResultsView-Hold.swift, previousFile: 05-06-DiceResultsView.swift)
+            }
+            @Step {
+                Open `ContentView.swift` and **add the held dice indices and the tap action as arguments** to the existing `DiceResultsView` call.
+                @Code(name: "ContentView.swift", file: 06-06-ContentView-Hold.swift, previousFile: 05-07-ContentView-Results.swift)
+            }
+        }
+    }
+
+    @Section(title: "Run and Verify") {
+        @ContentAndMedia {
+            After rolling once, select some dice in the result panel. The selected dice change color and get a lock badge, and they should stay in place on the next toss.
+
+            When you select Hold, the same state is used by both the UI and the interaction. The UI shows the selected die as locked, and `DiceInteraction` includes only `rollableDice` in the next toss group, so what's on screen and the actual game behavior never diverge.
+
+            After the third roll there's no further toss, so the Hold selection doesn't change either.
+
+            `setHeldAppearance` is a helper that changes the color based on the provided D6's `PhysicallyBasedMaterial`. If you swap in a model that uses a different material or a custom shader, adjust how Hold is displayed to fit that material structure.
+        }
+        @Steps {
+            @Step {
+                After the first roll, Hold some of the dice and roll again. If everything is working, the Hold indicators change, the dice you selected don't move, and only the rest roll again.
+                @Image(
+                    source: "6_Section 3_Step 1.png",
+                    alt: "In the result panel, three dice are marked as held with a lock icon and a blue color, and the matching dice on the 3D table are highlighted."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            What's the advantage of storing Hold state as an `EquipmentIdentifier`?
+            @Choice(isCorrect: true) {
+                You can track the held die with the same identity that TabletopKit interaction uses.
+                @Justification(reaction: "Correct.") {
+                    You can reliably find the same die while keeping the on-screen index separate from the actual equipment identity.
+                }
+            }
+            @Choice(isCorrect: false) {
+                TabletopKit automatically turns the held die's material blue.
+                @Justification(reaction: "Not quite.") {
+                    The visual color change is handled directly in `setHeldAppearance`.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Storing the Hold state removes the dice's pose from the snapshot, so they can no longer move.
+                @Justification(reaction: "Not quite.") {
+                    Hold is the app's selection state and doesn't remove the equipment state itself from the snapshot.
+                }
+            }
+        }
+        @MultipleChoice {
+            Which dice does `rollableDice` contain?
+            @Choice(isCorrect: false) {
+                Only the dice whose result value changed in the last roll.
+                @Justification(reaction: "Not quite.") {
+                    The next toss targets are decided by whether a die is held, not by whether its previous result changed.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Only the dice that are currently held.
+                @Justification(reaction: "It's the opposite.") {
+                    Held dice must stay as they are on the next roll, so they're excluded from the toss targets.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Only the dice that aren't currently held and can be rolled again in the next toss.
+                @Justification(reaction: "That's right.") {
+                    `rollableDice` becomes the list of equipment included in the grouped toss.
+                }
+            }
+        }
+        @MultipleChoice {
+            What's the most important reason that storing Hold only as UI state isn't enough?
+            @Choice(isCorrect: false) {
+                Because all local UI state is necessarily discarded when a SwiftUI view is redrawn.
+                @Justification(reaction: "Not quite.") {
+                    SwiftUI can also keep state; the key point is that the UI and the interaction must share the same game state.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Because you must also exclude the held dice from the next toss targets of the actual `TabletopInteraction`.
+                @Justification(reaction: "Correct.") {
+                    If only the selection mark changes and the toss logic still rolls the same dice, the Hold rule doesn't hold.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because `EquipmentIdentifier` is a type that can't be accessed inside a SwiftUI view.
+                @Justification(reaction: "Not quite.") {
+                    It isn't an access constraint; it's a matter of state responsibility and consistency.
+                }
+            }
+        }
+    }
+}

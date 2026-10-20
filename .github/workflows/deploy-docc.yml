@@ -7,7 +7,7 @@ on:
       - "YachtDice/**"
       - "YachtDice.xcodeproj/**"
       - "DocC-en/**"
-      - "Scripts/build-docc-en.sh"
+      - "Scripts/**"
       - ".github/workflows/deploy-docc.yml"
   workflow_dispatch:
 
@@ -75,6 +75,9 @@ jobs:
 
       - name: Build English DocC site
         run: bash Scripts/build-docc-en.sh "${DOCC_HOSTING_BASE_PATH}/en" site/en
+
+      - name: Add language toggle
+        run: bash Scripts/inject-lang-toggle.sh site "${DOCC_HOSTING_BASE_PATH}"
 
       - name: Verify static site output
         run: |

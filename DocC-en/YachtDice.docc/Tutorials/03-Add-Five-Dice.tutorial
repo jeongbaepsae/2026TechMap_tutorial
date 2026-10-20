@@ -1,0 +1,124 @@
+@Tutorial(time: 20) {
+    @Intro(title: "Add Five D6 Dice as Equipment") {
+        Start by creating a single `Die` to understand the structure, then extend the same type to five. When the chapter ends, the five D6 dice that Yacht needs sit side by side on the table.
+    }
+
+    @Section(title: "Create the First Die") {
+        @ContentAndMedia {
+            `EntityEquipment` bundles the **visible RealityKit entity**, a **unique ID**, and the **initial TabletopKit state** into a single type. `Die` loads `RealityKitContent.rkassets/dice/D6.usdz` directly through the `"dice/D6"` path.
+
+            Even though the D6 model already looks like a cube, TabletopKit doesn't infer the toss rules just from the visible mesh. `TossableRepresentation.cube` separately tells the toss simulation the **logical shape and face structure** to use.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `Die.swift` and define a die type that adopts `EntityEquipment`. Load `"dice/D6"` from `realityKitContentBundle` with `ModelEntity.load(named:in:)`, then bundle the ID, the initial pose, and the cube toss shape into one type. TabletopKit's 2D pose uses Spatial types, so this file also uses `internal import Spatial`.
+                @Code(name: "Die.swift", file: 03-01-Die-One.swift, reset: true)
+            }
+            @Step {
+                Go to `YachtGame.swift` and add a `dice` array and a single `setup.add(equipment:)` call for one die to the existing initialization code. From the moment it's registered in `TableSetup`, this die is no longer just a 3D model — it's equipment whose ID and pose TabletopKit tracks.
+                @Code(name: "YachtGame.swift", file: 03-02-YachtGame-OneDie.swift, previousFile: 02-06-YachtGame-Seat.swift)
+            }
+        }
+    }
+
+    @Section(title: "Extend the Same Structure to Five") {
+        @ContentAndMedia {
+            Each die uses the same model, but each needs a different ID and initial position. That's why you use `index` for both the ID and the x-position calculation. If you adjust the indices 1...5 around the middle value 3 and place the dice at `-0.12, -0.06, 0, 0.06, 0.12m`, the five dice sit symmetrically around the center of the table.
+        }
+        @Steps {
+            @Step {
+                Go back to `Die.swift` and **replace the existing fixed-position calculation in `initialState` with an index-based one**. Using `index - 3` puts the middle die at x = 0 and spaces the others the same distance to the left and right.
+                @Code(name: "Die.swift", file: 03-03-Die-FiveLayout.swift, previousFile: 03-01-Die-One.swift)
+            }
+            @Step {
+                Open `YachtGame.swift` and replace the code that created and registered a single die with `(1...5).map` and a loop that registers each one. All five dice are added to `TableSetup`, each with its own unique ID.
+                @Code(name: "YachtGame.swift", file: 03-04-YachtGame-FiveDice.swift, previousFile: 03-02-YachtGame-OneDie.swift)
+            }
+        }
+    }
+
+    @Section(title: "Run and Verify") {
+        @ContentAndMedia {
+            You've succeeded if five D6 dice appear on the table at even intervals. The interaction for picking up and tossing them is connected in the next chapter.
+
+            The five dice share the same USDZ model and toss shape, but each has a different `EquipmentIdentifier` and pose. TabletopKit uses this ID to track each die's state and interaction results independently.
+
+            If you can't see the dice, check the `dice/D6` path and whether each `Die` is registered with `setup.add(equipment:)`.
+        }
+        @Steps {
+            @Step {
+                Run the app again. If everything is working, the five D6 dice appear side by side around the center of the table without overlapping. It's normal that you can't pick up and toss the dice yet.
+                @Image(
+                    source: "3_Section 3_Step 1.png",
+                    alt: "Five D6 dice sit side by side on the round table in the visionOS Simulator."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            What is the `entity` of `EntityEquipment` responsible for?
+            @Choice(isCorrect: true) {
+                It provides the RealityKit object to display for the equipment.
+                @Justification(reaction: "Correct.") {
+                    It connects TabletopKit's logical equipment state to the RealityKit entity you actually see.
+                }
+            }
+            @Choice(isCorrect: false) {
+                It stores only the equipment's current face value and pose, and doesn't include the visual model.
+                @Justification(reaction: "Not quite.") {
+                    Face values and poses belong to the state; `entity` is the visual object.
+                }
+            }
+            @Choice(isCorrect: false) {
+                It creates an `EquipmentIdentifier` shared by dice of the same kind.
+                @Justification(reaction: "Not quite.") {
+                    Each equipment's `id` is a separate property and must be unique.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why do you specify `TossableRepresentation.cube` even though the D6 model is already cube-shaped?
+            @Choice(isCorrect: false) {
+                To remodel the RealityKit mesh as a cube and regenerate the texture UVs.
+                @Justification(reaction: "Not quite.") {
+                    It isn't an API for changing the visual mesh or texture.
+                }
+            }
+            @Choice(isCorrect: true) {
+                To tell TabletopKit's toss simulation the logical shape and face structure to use.
+                @Justification(reaction: "That's right.") {
+                    The visual mesh and the toss shape have separate roles.
+                }
+            }
+            @Choice(isCorrect: false) {
+                To specify the bundle path so that `EntityEquipment` can load the `ModelEntity`.
+                @Justification(reaction: "Not quite.") {
+                    The asset path is specified with `named:` and the bundle of `ModelEntity.load`.
+                }
+            }
+        }
+        @MultipleChoice {
+            What problem occurs if all five dice use the same `EquipmentIdentifier`?
+            @Choice(isCorrect: false) {
+                The five models automatically share a single material.
+                @Justification(reaction: "Not quite.") {
+                    Whether materials are shared has nothing to do with the equipment ID.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Even if you give them different initial poses, all dice end up at the same position.
+                @Justification(reaction: "Not quite.") {
+                    The core problem isn't the pose itself but that TabletopKit can't distinguish the equipment's identity.
+                }
+            }
+            @Choice(isCorrect: true) {
+                TabletopKit can't identify each equipment independently in interactions and snapshots.
+                @Justification(reaction: "Correct.") {
+                    Equipment lookup and state updates are keyed by ID, so each die needs a unique ID.
+                }
+            }
+        }
+    }
+}

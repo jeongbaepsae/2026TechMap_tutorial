@@ -1,0 +1,46 @@
+@Tutorials(name: "Yacht Dice with TabletopKit") {
+    @Intro(title: "Build Yacht Dice with TabletopKit") {
+        Connect RealityKit's table and dice to TabletopKit's tabletop and equipment, then carry the player's toss results into Yacht's turn and score state. Finally, hold the dice you want and record your scores to complete a full game. The screen below shows the finished Yacht Dice you'll build in this tutorial.
+
+        **Languages:** English | [한국어](https://jeongbaepsae.github.io/2026TechMap_tutorial/tutorials/yacht-dice-with-tabletopkit/)
+
+        @Image(source: "9_Section 3_Step 1.png", alt: "The table, five dice, score sheet, and Game Complete screen of the finished Yacht Dice app.")
+    }
+
+    @Chapter(name: "1. Create the Game Space") {
+        @Image(source: chapter-tabletop.svg, alt: "A round table inside a volume.")
+
+        Prepare a visionOS volume project and the table and D6 assets in `RealityKitContent`, then connect the tabletop and player seat that TabletopKit uses.
+
+        @TutorialReference(tutorial: "doc:01-Prepare-the-Game-Space")
+        @TutorialReference(tutorial: "doc:02-Build-the-Tabletop")
+    }
+
+    @Chapter(name: "2. Dice and Interaction") {
+        @Image(source: chapter-interaction.svg, alt: "Manipulating dice above a table.")
+
+        Add five D6 dice as equipment, then implement an interaction so that picking up one die tosses all five together.
+
+        @TutorialReference(tutorial: "doc:03-Add-Five-Dice")
+        @TutorialReference(tutorial: "doc:04-Toss-the-Dice")
+    }
+
+    @Chapter(name: "3. Build a Yacht Turn") {
+        @Image(source: chapter-interaction.svg, alt: "Five dice and a result panel.")
+
+        Read the toss results, then connect the three-rolls-per-turn rule and Hold.
+
+        @TutorialReference(tutorial: "doc:05-Read-Results-and-Limit-Rolls")
+        @TutorialReference(tutorial: "doc:06-Hold-Dice")
+    }
+
+    @Chapter(name: "4. Complete the Score Sheet") {
+        @Image(source: chapter-scoring.svg, alt: "A Yacht score sheet shown beside five dice.")
+
+        Calculate Yacht scores in pure Swift, record them, and finish with the bonus and the end of the game.
+
+        @TutorialReference(tutorial: "doc:07-Calculate-Yacht-Scores")
+        @TutorialReference(tutorial: "doc:08-Record-Scores")
+        @TutorialReference(tutorial: "doc:09-Finish-the-Game")
+    }
+}

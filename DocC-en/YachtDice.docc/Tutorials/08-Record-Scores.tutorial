@@ -1,0 +1,154 @@
+@Tutorial(time: 35) {
+    @Intro(title: "Record Categories on the Score Sheet") {
+        You show a preview of the current roll on the score sheet, and when the user chooses a category, that score is locked in. Once it's recorded, you reset Hold and the roll count to start the next turn.
+    }
+
+    @Section(title: "Create the Data Structures to Record") {
+        @ContentAndMedia {
+            A preview can be recalculated at any time, but a chosen category's score must be kept until the game ends. So you add a separate score sheet model.
+
+            `YachtScoreEntry` stores not only the category and the score, but also the dice results at the moment the score was locked in. That dice array isn't for recalculating the score; it's a record that lets the score sheet show **which dice combination was used to record it**.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreEntry.swift` and declare the type that stores the locked-in score, the category, and the dice pip values.
+                @Code(name: "YachtScoreEntry.swift", file: 08-01-YachtScoreEntry.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreSheet.swift` and define the dictionary that stores the record for each category, along with the `record` method.
+                @Code(name: "YachtScoreSheet.swift", file: 08-02-YachtScoreSheet-Basic.swift, reset: true)
+            }
+            @Step {
+                Open `YachtGame.swift` and add the `scoreSheet` stored property, which you keep separate from the turn state.
+                @Code(name: "YachtGame.swift", file: 08-03-YachtGame-ScoreSheet.swift, previousFile: 07-06-YachtGame-Scoring.swift)
+            }
+            @Step {
+                Open `YachtGame+Scoring.swift` and add the `commitScore` logic that locks in the selected category and resets the state for the next turn.
+                @Code(name: "YachtGame+Scoring.swift", file: 08-04-YachtGame+Scoring-Record.swift, previousFile: 07-07-YachtGame+Scoring-Preview.swift)
+            }
+        }
+    }
+
+    @Section(title: "Connect the Score Sheet UI") {
+        @ContentAndMedia {
+            Separating the look of rows that are already recorded from rows that can still be selected makes the score sheet easier to read. You assemble the UI from small components up to the full score sheet, as shown below.
+
+            `YachtScoreSheetView → YachtScoreSectionView → YachtScoreRow → YachtRecordedScoreRow / DiceFaceSymbolsView`
+
+            The data flow starts from `YachtGame`'s previews and score sheet, and choosing a category goes back to `commitScore(...)`.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `DieFaceSymbol.swift` and define the views that show the recorded dice pip values as SF Symbols.
+                @Code(name: "DieFaceSymbol.swift", file: 08-05-DieFaceSymbol.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtRecordedScoreRow.swift` and implement the score row for a category that's already been recorded.
+                @Code(name: "YachtRecordedScoreRow.swift", file: 08-06-YachtRecordedScoreRow.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreRow.swift` and define the view that switches between a locked-in row and a selectable expected-score row depending on whether the category has been recorded.
+                @Code(name: "YachtScoreRow.swift", file: 08-07-YachtScoreRow.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreSectionView.swift` and show multiple score rows grouped into the Numbers and Combinations sections.
+                @Code(name: "YachtScoreSectionView.swift", file: 08-08-YachtScoreSectionView.swift, reset: true)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreSheetView.swift` and combine the two score sections with the total.
+                @Code(name: "YachtScoreSheetView.swift", file: 08-09-YachtScoreSheetView-Basic.swift, reset: true)
+            }
+            @Step {
+                Open `ContentView.swift`, keep the existing front result ornament, and **add the back score sheet ornament along with a `commitScore` call when a category is chosen**.
+                @Code(name: "ContentView.swift", file: 08-10-ContentView-ScoreSheet.swift, previousFile: 06-06-ContentView-Hold.swift)
+            }
+        }
+    }
+
+    @Section(title: "Run and Verify") {
+        @ContentAndMedia {
+            After rolling at least once, expected scores appear in the categories that are still empty. When you choose one, it turns into an actual record, and the dice results and roll count should reset to the next turn's state.
+
+            Expected scores and recorded scores have different lifecycles. A preview is recalculated whenever the dice change, but a `YachtScoreEntry` is kept from the moment its category is locked in until the game ends. `YachtScoreSheet` owns this persistent state.
+
+            Because the score sheet keeps whether each category has been recorded, you can compute the Numbers subtotal and bonus from the same data, and also tell whether every category has been filled.
+
+            This is a chapter with many UI components, so if the code feels long, check it by splitting the roles: `Entry/Sheet = data`, `Row/Section/SheetView = display`, and `YachtGame = the game state that connects the two`.
+        }
+        @Steps {
+            @Step {
+                In the app, roll the dice at least once and choose a score category. If everything is working, the expected score turns into a locked-in score, and the roll count and Hold return to the initial state of the next turn.
+                @Image(
+                    source: "8_Section 3_Step 1.png",
+                    alt: "The Sixes category shows a recorded score of 18, so Total Score is 18, and the dice result panel has reset to Roll 0 / 3."
+                )
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Why do you separate the preview score from the recorded score?
+            @Choice(isCorrect: false) {
+                Because a `TabletopGame` snapshot can't be used again once it's read, so you need two score models.
+                @Justification(reaction: "Not quite.") {
+                    It isn't because of a snapshot constraint; it's because the two kinds of data have different lifecycles.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because SwiftUI can't display a not-yet-recorded value and a recorded value in the same view.
+                @Justification(reaction: "Not quite.") {
+                    It isn't a technical UI limitation; it's a design that separates the meaning of the game state.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Because the preview keeps changing with the current roll, but the score of a category, once recorded, must be kept in later turns too.
+                @Justification(reaction: "Correct.") {
+                    You manage a temporary calculation result and a locked-in game record as different states.
+                }
+            }
+        }
+        @MultipleChoice {
+            Where should recording the same category twice ultimately be prevented?
+            @Choice(isCorrect: true) {
+                In the score sheet model's recording logic, like `YachtScoreSheet.record`.
+                @Justification(reaction: "That's right.") {
+                    If the model layer, not just the UI, guarantees the no-duplicate-record rule, the state stays safe through any other call path.
+                }
+            }
+            @Choice(isCorrect: false) {
+                The `.disabled` modifier on `YachtScoreRow` is enough on its own.
+                @Justification(reaction: "Not quite.") {
+                    Blocking in the UI is an aid; it's safer to validate the core game rule in the model as well.
+                }
+            }
+            @Choice(isCorrect: false) {
+                `TabletopGame.withCurrentSnapshot` automatically filters out categories that are already recorded.
+                @Justification(reaction: "Not quite.") {
+                    A TabletopKit snapshot provides the dice state and doesn't know the Yacht score sheet's category recording rules.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why do you reset the turn state right after recording a score?
+            @Choice(isCorrect: false) {
+                Because you have to create a new `TabletopGame` instance every time you record a score.
+                @Justification(reaction: "Not quite.") {
+                    You keep the same TabletopGame and move on to Yacht's next turn.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Because choosing a category ends the current turn, so you reset the roll count and Hold to start the next turn with a fresh state.
+                @Justification(reaction: "Correct.") {
+                    You keep the recorded score and clean up only the temporary state that belongs to the turn.
+                }
+            }
+            @Choice(isCorrect: false) {
+                To turn the recorded score back into the preview dictionary.
+                @Justification(reaction: "Not quite.") {
+                    The recorded score stays in the score sheet, and the preview is recalculated from the next roll's result.
+                }
+            }
+        }
+    }
+}

@@ -4,6 +4,8 @@ visionOS에서 `TabletopKit`을 처음 사용하는 개발자를 위한 Yacht Di
 
 ## Overview
 
+**Languages:** [English](https://jeongbaepsae.github.io/2026TechMap_tutorial/en/documentation/yachtdice/) | 한국어
+
 Xcode에서 `visionOS > App` 템플릿을 만들고 Initial Scene을 `Volume`으로 선택한 뒤 시작합니다. 튜토리얼에서 제공하는 `table.usda`와 `D6.usdz`를 `RealityKitContent.rkassets`에 추가하고, `realityKitContentBundle`에서 직접 불러와 TabletopKit의 tabletop과 장비로 연결합니다.
 
 Yacht Dice는 네 가지 역할이 연결되어 동작합니다.

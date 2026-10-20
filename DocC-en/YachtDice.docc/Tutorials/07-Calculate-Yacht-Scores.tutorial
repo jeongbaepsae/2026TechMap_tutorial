@@ -1,0 +1,148 @@
+@Tutorial(time: 25) {
+    @Intro(title: "Calculate Yacht Scores") {
+        This chapter focuses not on TabletopKit but on **pure Swift game rules**. You build a calculator that, given the current five dice results, works out how many points each Yacht category would score.
+    }
+
+    @Section(title: "Define the Score Categories") {
+        @ContentAndMedia {
+            Instead of using on-screen strings directly in conditionals, you represent categories with the `YachtCategory` enum. This is also where you distinguish the Numbers and Combinations sections.
+
+            The scoring rules in this sample are as follows.
+
+            | Category | How it's calculated |
+            | --- | --- |
+            | Ones...Sixes | The sum of the dice showing that number |
+            | Choice | The sum of all five dice |
+            | Four of a Kind | The sum of all dice if four or more show the same number |
+            | Full House | The sum of all dice for a 2 + 3 combination |
+            | Small Straight | 15 points if the condition is met |
+            | Large Straight | 30 points if the condition is met |
+            | Yacht | 50 points if all five dice show the same number |
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `YachtCategory.swift` and define the enum for the score categories and their display names. Define the 12 categories, their display names, and the target face for Numbers.
+                @Code(name: "YachtCategory.swift", file: 07-01-YachtCategory.swift, reset: true)
+            }
+        }
+    }
+
+    @Section(title: "Handle Every Category in a Single Calculator") {
+        @ContentAndMedia {
+            The score calculator doesn't read RealityKit or TabletopKit state directly. Because it takes only five `[Int]` values as input, it's easy to test and reuse.
+        }
+        @Steps {
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreCalculator.swift` and define the type that handles the Numbers and Choice calculations. First, implement a minimal calculator that handles only Numbers and Choice.
+                @Code(name: "YachtScoreCalculator.swift", file: 07-02-YachtScoreCalculator-Basic.swift, reset: true)
+            }
+            @Step {
+                In the same `YachtScoreCalculator.swift`, **add the frequency calculation and the Four of a Kind / Full House branches** to the `score(dice:category:)` implementation. If you collect how many times each pip appeared in a `Dictionary`, both rules can reuse the **same frequency data**. Also notice how `reduce(into:)` builds this dictionary in a single pass over the array.
+                @Code(name: "YachtScoreCalculator.swift", file: 07-03-YachtScoreCalculator-Groups.swift, previousFile: 07-02-YachtScoreCalculator-Basic.swift)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtScoreCalculator+Patterns.swift` and write the helpers that recognize the Straight and Yacht pip patterns in an extension. Using `Set` and `isSubset(of:)`, you check for containment rather than order.
+                @Code(name: "YachtScoreCalculator+Patterns.swift", file: 07-04-YachtScoreCalculator+Patterns.swift, reset: true)
+            }
+            @Step {
+                Go back to `YachtScoreCalculator.swift`, **complete the remaining category branches of `score(dice:category:)` by calling the pattern helpers**, and add `scores(for:)`, which builds the expected score for every category.
+                @Code(name: "YachtScoreCalculator.swift", file: 07-05-YachtScoreCalculator-All.swift, previousFile: 07-03-YachtScoreCalculator-Groups.swift)
+            }
+            @Step {
+                Open `YachtGame.swift` and add a `YachtScoreCalculator` instance to the class's stored properties. The basic structure that creates the 3D scene stays as it is.
+                @Code(name: "YachtGame.swift", file: 07-06-YachtGame-Scoring.swift, previousFile: 06-02-YachtGame-Hold.swift)
+            }
+            @Step {
+                In Xcode, create a new Swift file named `YachtGame+Scoring.swift` and write, in an extension, the property that calculates the expected score for each category from the current dice results.
+                @Code(name: "YachtGame+Scoring.swift", file: 07-07-YachtGame+Scoring-Preview.swift, reset: true)
+            }
+        }
+    }
+
+    @Section(title: "Verify") {
+        @ContentAndMedia {
+            The calculator interprets the same dice results differently for each category, as shown below.
+
+            | Dice | Result to check |
+            | --- | --- |
+            | `[6, 6, 6, 6, 2]` | Sixes 24, Four of a Kind 26 |
+            | `[2, 2, 3, 3, 3]` | Full House 13 |
+            | `[1, 2, 3, 4, 6]` | Small Straight 15 |
+
+            `YachtScoreCalculator` doesn't depend on TabletopKit or RealityKit types; it takes only `[Int]`. Thanks to that, you can turn the results from the 3D interaction into pure game data and then calculate each category's expected score independently.
+
+            The values calculated now are previews that change whenever the dice results change. In Yacht, the value must be locked in the moment you choose a category, so the next chapter adds a separate score sheet state.
+        }
+        @Steps {
+            @Step {
+                Compare the three examples above with the input to `YachtScoreCalculator.score(dice:category:)` and check what value each rule returns. For example, passing `[2, 2, 3, 3, 3]` with `.fullHouse` should give 13, and passing `[1, 2, 3, 4, 6]` with `.smallStraight` should give 15.
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            What's the biggest advantage of separating the score calculator from TabletopKit types?
+            @Choice(isCorrect: false) {
+                Separating the scoring code automatically raises RealityKit's rendering frame rate.
+                @Justification(reaction: "Not quite.") {
+                    Improving rendering performance isn't the direct goal of this separation.
+                }
+            }
+            @Choice(isCorrect: true) {
+                You can test and reuse the game rules independently using only the dice results in `[Int]` form.
+                @Justification(reaction: "Correct.") {
+                    You can verify the scoring rules without a 3D interaction or a TabletopKit session.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Swift can return a dictionary only if you make `YachtScoreCalculator` a separate type.
+                @Justification(reaction: "Not quite.") {
+                    It isn't a limitation of Swift's type system; it's a design that separates responsibilities.
+                }
+            }
+        }
+        @MultipleChoice {
+            Why is a frequency map useful for judging a Full House?
+            @Choice(isCorrect: false) {
+                Because you can sort each die's 3D position and treat nearby dice as the same number.
+                @Justification(reaction: "Not quite.") {
+                    Scoring doesn't use spatial positions.
+                }
+            }
+            @Choice(isCorrect: false) {
+                Because you can use the cube face's raw value directly as the score without applying a `FaceMap`.
+                @Justification(reaction: "Not quite.") {
+                    A frequency map counts how often each value appears in results that have already been converted to numbers.
+                }
+            }
+            @Choice(isCorrect: true) {
+                Because you can count how many times each pip value appeared and directly compare occurrence patterns like `[2, 3]`.
+                @Justification(reaction: "That's right.") {
+                    It suits rules like Full House, where the number of identical values matters more than the values themselves.
+                }
+            }
+        }
+        @MultipleChoice {
+            In the current implementation, what's the direct condition under which `yachtScorePreviews` returns an empty dictionary?
+            @Choice(isCorrect: true) {
+                When `hasRolled` is false, so valid results for all five dice aren't ready yet.
+                @Justification(reaction: "Correct.") {
+                    Preview scores are calculated only when there's a current roll result.
+                }
+            }
+            @Choice(isCorrect: false) {
+                When `rollCount` has reached the maximum of 3.
+                @Justification(reaction: "Not quite.") {
+                    Even after the third roll, you can show the score preview as long as there's a current result.
+                }
+            }
+            @Choice(isCorrect: false) {
+                When all five dice are held.
+                @Justification(reaction: "Not quite.") {
+                    Even if they're all held, you can still calculate the score preview as long as the dice results have already been read.
+                }
+            }
+        }
+    }
+}
